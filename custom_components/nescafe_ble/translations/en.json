@@ -1,0 +1,74 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Discovered Nescafe Barista Machines",
+        "description": "Select the machine to add",
+        "data": {
+          "address": "Machine"
+        }
+      },
+      "bluetooth_confirm": {
+        "title": "Discovered Nescafe Barista Machine",
+        "description": "Add the Nescafe Barista machine {name}?"
+      }
+    },
+    "abort": {
+      "no_devices_found": "No Nescafe Barista machines found nearby.",
+      "already_configured": "This machine is already configured.",
+      "cannot_connect": "Failed to connect to the machine."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "machine_state": { "name": "Machine State" },
+      "coffee_level": { "name": "Coffee Level" },
+      "counter_espresso": { "name": "Espresso Count" },
+      "counter_lungo": { "name": "Lungo Count" },
+      "counter_extra_lungo": { "name": "Extra Lungo Count" },
+      "counter_cappuccino": { "name": "Cappuccino Count" },
+      "counter_latte_macchiato": { "name": "Latte Macchiato Count" },
+      "counter_hot_water": { "name": "Hot Water Count" },
+      "counter_rinse": { "name": "Rinse Count" },
+      "counter_custom_recipe": { "name": "Custom Recipe Count" },
+      "counter_motor_blocked": { "name": "Motor Blocked Count" },
+      "counter_motor_dirty": { "name": "Motor Dirty Count" },
+      "counter_no_water": { "name": "No Water Count" },
+      "firmware": { "name": "Firmware Version" },
+      "model": { "name": "Model" },
+      "serial": { "name": "Serial Number" },
+      "manufacturer": { "name": "Manufacturer" },
+      "machine_name": { "name": "Machine Name" }
+    },
+    "binary_sensor": {
+      "dosing_unit_dirty": { "name": "Dosing Unit Dirty" },
+      "mandatory_rinse": { "name": "Mandatory Rinse" },
+      "low_coffee": { "name": "Low Coffee" },
+      "no_water_error": { "name": "No Water" },
+      "coffee_empty": { "name": "Coffee Empty" },
+      "coffee_box_missing": { "name": "Coffee Box Missing" },
+      "drawer_open": { "name": "Drawer Open" },
+      "motor_blocked_error": { "name": "Motor Blocked" },
+      "coffee_level_sensor_missing": { "name": "Coffee Level Sensor Missing" },
+      "over_heating": { "name": "Overheating" }
+    },
+    "button": {
+      "brew_espresso": { "name": "Brew Espresso" },
+      "brew_lungo": { "name": "Brew Lungo" },
+      "brew_extra_lungo": { "name": "Brew Extra Lungo" },
+      "brew_cappuccino": { "name": "Brew Cappuccino" },
+      "brew_latte_macchiato": { "name": "Brew Latte Macchiato" },
+      "brew_rinse": { "name": "Rinse" },
+      "brew_hot_water": { "name": "Hot Water" },
+      "brew_custom_recipe": { "name": "Custom Recipe" },
+      "action_pair": { "name": "Pair Machine" },
+      "action_factory_reset": { "name": "Factory Reset" },
+      "action_descale": { "name": "Descaling Mode" },
+      "action_sync_time": { "name": "Sync Time" },
+      "action_eco_mode": { "name": "Eco Mode" }
+    },
+    "switch": {
+      "power": { "name": "Power" }
+    }
+  }
+}

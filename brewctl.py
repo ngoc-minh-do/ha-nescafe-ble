@@ -22,13 +22,11 @@ import argparse
 import asyncio
 import logging
 import struct
-import sys
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-import bleak
 from bleak import BleakScanner, BleakClient
 
 logger = logging.getLogger("brewctl")
@@ -460,8 +458,13 @@ class BaristaClient:
     async def get_recipes(self) -> dict[str, list[int]]:
         data = await self._read_char(CHAR_RECIPES)
         names = [
-            "espresso", "lungo", "xlungo", "cappuccino",
-            "latte_macchiato", "hot_water", "custom",
+            "espresso",
+            "lungo",
+            "xlungo",
+            "cappuccino",
+            "latte_macchiato",
+            "hot_water",
+            "custom",
         ]
         result = {}
         for i, name in enumerate(names):
@@ -478,8 +481,12 @@ class BaristaClient:
     async def perform_pairing(self):
         logger.info("Initiating pairing with 'WE START PAIRING' ...")
         pairing_bytes = "WE START PAIRING".encode("ascii")
-        await self._write_char(CHAR_MACHINE_SERIAL, pairing_bytes.ljust(16, b"\x00")[:16])
-        logger.info("Pairing initiation sent. Press the button on your machine if needed.")
+        await self._write_char(
+            CHAR_MACHINE_SERIAL, pairing_bytes.ljust(16, b"\x00")[:16]
+        )
+        logger.info(
+            "Pairing initiation sent. Press the button on your machine if needed."
+        )
 
     # ── Factory Reset / Descaling ──────────────────────────────────────────
 
@@ -753,7 +760,9 @@ def main():
     p_custom.add_argument("mac", help="Machine MAC address")
     p_custom.add_argument("--led", type=int, default=0, help="LED index (0-4)")
     p_custom.add_argument("--doses", type=int, default=1, help="Doses (1-5)")
-    p_custom.add_argument("--mixing", type=int, default=40, help="Mixing volume ml (40-300)")
+    p_custom.add_argument(
+        "--mixing", type=int, default=40, help="Mixing volume ml (40-300)"
+    )
     p_custom.add_argument("--jet", type=int, default=0, help="Jet volume ml (0-90)")
 
     p_settime = sub.add_parser("set-time", help="Sync machine time")

@@ -10,3 +10,14 @@ dependencies = [
 
 [project.scripts]
 brewctl = "brewctl:main"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.1",
+    "pyright>=1.1.411",
+    "pytest>=9.1.1",
+    "ruff>=0.15.22",
+]
+
+[tool.uv]
+package = true

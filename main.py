@@ -1,5 +1,5 @@
 def main():
-    print("Hello from openbrew!")
+    print("Hello from ha-nescafe-ble!")
 
 
 if __name__ == "__main__":

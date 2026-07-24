@@ -3,7 +3,7 @@ name = "ha-nescafe-ble"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
     "bleak>=3.0.2",
     "bleak-retry-connector>=4.6.3",
@@ -11,9 +11,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "homeassistant>=2025.4.4",
+    "homeassistant>=2026.2.3",
     "pre-commit>=4.6.1",
     "pyright>=1.1.411",
     "pytest>=9.1.1",
-    "ruff>=0.15.22",
+    "ruff>=0.16.0",
 ]
+

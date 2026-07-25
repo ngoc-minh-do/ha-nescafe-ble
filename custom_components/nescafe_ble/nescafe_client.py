@@ -260,8 +260,9 @@ class NescafeBleClient:
         return _null_terminated_string(data)
 
     async def get_pairing_status(self) -> bool:
-        data = await self._read_char(CHAR_PARAMETER_BITS_PAIRED)
-        return (data[0] & 0x04) != 0 if data else False
+        data = await self._read_char(CHAR_BARISTA_STATUS)
+        peripheral_state = struct.unpack_from("<H", data, 5)[0]
+        return (peripheral_state >> 7) & 1 != 0
 
     async def get_recipes(self) -> dict[str, list[int]]:
         data = await self._read_char(CHAR_RECIPES)

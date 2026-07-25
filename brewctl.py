@@ -481,8 +481,9 @@ class BaristaClient:
     # ── Pairing ────────────────────────────────────────────────────────────
 
     async def get_pairing_status(self) -> bool:
-        data = await self._read_char(CHAR_PARAMETER_BITS_PAIRED)
-        return (data[0] & 0x04) != 0 if data else False
+        data = await self._read_char(CHAR_BARISTA_STATUS)
+        peripheral_state = struct.unpack_from("<H", data, 5)[0]
+        return bool((peripheral_state >> 7) & 1)
 
     async def perform_pairing(self):
         logger.info("Initiating pairing with 'WE START PAIRING' ...")

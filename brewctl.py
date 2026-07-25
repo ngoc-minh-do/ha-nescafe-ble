@@ -476,6 +476,7 @@ class BaristaClient:
         for i, name in enumerate(names):
             offset = i * 5
             result[name] = list(data[offset : offset + 5])
+        result["_rfu"] = [int(b) for b in data[35:45]]
         return result
 
     # ── Pairing ────────────────────────────────────────────────────────────

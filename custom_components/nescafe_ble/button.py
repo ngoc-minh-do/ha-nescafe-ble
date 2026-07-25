@@ -3,17 +3,22 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.const import EntityCategory
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import ACTION_BUTTONS, MANUFACTURER, RECIPE_BUTTONS
-from .coordinator import NescafeConfigEntry, NescafeDataUpdateCoordinator
+from .coordinator import NescafeDataUpdateCoordinator
 from .nescafe_client import NescafeBleClient
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import NescafeConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,8 +90,8 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
         )
 
     async def async_press(self) -> None:
-        from homeassistant.components import bluetooth
         from bleak_retry_connector import close_stale_connections_by_address
+        from homeassistant.components import bluetooth
 
         await close_stale_connections_by_address(self._address)
         ble_device = bluetooth.async_ble_device_from_address(

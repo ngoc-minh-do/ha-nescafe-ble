@@ -1,9 +1,10 @@
 """Nescafé Barista BLE client for Home Assistant."""
 
+from __future__ import annotations
+
 import struct
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
@@ -29,7 +30,7 @@ CHAR_SW_VERSION = "00002A28" + BLE_BASE
 CHAR_MANUFACTURER_NAME = "00002A29" + BLE_BASE
 
 
-@dataclass
+@dataclass(slots=True)
 class MachineStatus:
     error_code: int = 0
     machine_state: int = 255
@@ -99,7 +100,7 @@ class MachineStatus:
         ]
 
 
-@dataclass
+@dataclass(slots=True)
 class MachineCounters:
     motor_blocked: int = 0
     motor_dirty: int = 0
@@ -114,7 +115,7 @@ class MachineCounters:
     hot_water: int = 0
 
 
-@dataclass
+@dataclass(slots=True)
 class MachineInfo:
     serial: str = ""
     model: str = ""
@@ -123,13 +124,13 @@ class MachineInfo:
     manufacturer: str = ""
 
 
-@dataclass
+@dataclass(slots=True)
 class NescafeData:
     status: MachineStatus | None = None
     counters: MachineCounters | None = None
     coffee_level: int | None = None
     info: MachineInfo | None = None
-    machine_time: Optional[datetime] = None
+    machine_time: datetime | None = None
     pairing_status: bool | None = None
     machine_name: str | None = None
     recipes: dict[str, list[int]] | None = None
@@ -229,7 +230,7 @@ class NescafeBleClient:
             pass
         return info
 
-    async def get_machine_time(self) -> Optional[datetime]:
+    async def get_machine_time(self) -> datetime | None:
         data = await self._read_char(CHAR_MACHINE_TIME)
         ts = struct.unpack_from("<I", data, 0)[0]
         if ts == 0:

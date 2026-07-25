@@ -1,9 +1,17 @@
 """Nescafe Barista BLE integration."""
 
-from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
+from __future__ import annotations
 
-from .coordinator import NescafeConfigEntry, NescafeDataUpdateCoordinator
+from typing import TYPE_CHECKING
+
+from homeassistant.const import Platform
+
+from .coordinator import NescafeDataUpdateCoordinator
+
+if TYPE_CHECKING:
+    from homeassistant.core import HomeAssistant
+
+    from .coordinator import NescafeConfigEntry
 
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,

@@ -4,6 +4,7 @@ DOMAIN = "nescafe_ble"
 MANUFACTURER = "Nescafé / De'Longhi"
 
 CONF_ADDRESS = "address"
+CONF_SCAN_INTERVAL = "scan_interval"
 
 SCAN_SERVICE_UUID = "C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A"
 

@@ -11,10 +11,10 @@ from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,
     async_discovered_service_info,
 )
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
 from homeassistant.const import CONF_ADDRESS
 
-from .const import DOMAIN, SCAN_SERVICE_UUID
+from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN, SCAN_SERVICE_UUID
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,4 +87,35 @@ class NescafeConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({vol.Required(CONF_ADDRESS): vol.In(devices)}),
+        )
+
+    @staticmethod
+    @override
+    def async_get_options_flow(
+        config_entry: ConfigEntry,
+    ) -> NescafeOptionsFlow:
+        return NescafeOptionsFlow()
+
+
+class NescafeOptionsFlow(OptionsFlow):
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        if user_input is not None:
+            return self.async_create_entry(
+                data={CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL] * 60}
+            )
+
+        current = self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL) // 60
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_SCAN_INTERVAL,
+                        default=current,
+                    ): vol.All(vol.Coerce(int), vol.Range(min=1)),
+                }
+            ),
         )

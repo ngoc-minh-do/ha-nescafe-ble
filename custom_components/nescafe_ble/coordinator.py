@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
 
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN
+from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN
 from .nescafe_client import NescafeBleClient, NescafeData
 
 _LOGGER = logging.getLogger(__name__)
@@ -31,13 +31,18 @@ class NescafeDataUpdateCoordinator(DataUpdateCoordinator[NescafeData]):
     def __init__(self, hass: HomeAssistant, entry: NescafeConfigEntry) -> None:
         self._device: BLEDevice | None = None
 
+        scan_interval = entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+
         super().__init__(
             hass,
             _LOGGER,
             config_entry=entry,
             name=DOMAIN,
-            update_interval=timedelta(seconds=DEFAULT_SCAN_INTERVAL),
+            update_interval=timedelta(seconds=scan_interval),
         )
+
+    def update_scan_interval(self, seconds: int) -> None:
+        self.update_interval = timedelta(seconds=seconds)
 
     @override
     async def _async_setup(self) -> None:

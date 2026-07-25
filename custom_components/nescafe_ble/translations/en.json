@@ -19,6 +19,16 @@
       "cannot_connect": "Failed to connect to the machine."
     }
   },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Nescafe Options",
+        "data": {
+          "scan_interval": "Polling interval (minutes)"
+        }
+      }
+    }
+  },
   "entity": {
     "sensor": {
       "machine_state": { "name": "Machine State" },

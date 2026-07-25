@@ -487,14 +487,43 @@ class BaristaClient:
         return bool((peripheral_state >> 7) & 1)
 
     async def perform_pairing(self):
-        logger.info("Initiating pairing with 'WE START PAIRING' ...")
-        pairing_bytes = "WE START PAIRING".encode("ascii")
-        await self._write_char(
-            CHAR_MACHINE_SERIAL, pairing_bytes.ljust(16, b"\x00")[:16]
-        )
-        logger.info(
-            "Pairing initiation sent. Press the button on your machine if needed."
-        )
+        from Crypto.Cipher import AES
+
+        logger.info("Starting full pairing protocol...")
+
+        q = await self._start_notify(CHAR_MACHINE_SERIAL)
+
+        logger.debug("Reading status to trigger token notification...")
+        await self._read_char(CHAR_BARISTA_STATUS)
+        encrypted_token = await asyncio.wait_for(q.get(), timeout=10.0)
+        logger.debug("Encrypted token received (%d bytes)", len(encrypted_token))
+
+        pairing_bytes = "WE START PAIRING".encode("ascii").ljust(16, b"\x00")[:16]
+        await self._write_char(CHAR_MACHINE_SERIAL, pairing_bytes)
+        encrypted_password = await asyncio.wait_for(q.get(), timeout=10.0)
+        logger.debug("Encrypted password received (%d bytes)", len(encrypted_password))
+
+        logger.info("Press the button on your machine within 10 seconds...")
+        aes_key = await asyncio.wait_for(q.get(), timeout=15.0)
+        logger.debug("AES key received (%d bytes)", len(aes_key))
+
+        cipher = AES.new(bytes(aes_key), AES.MODE_ECB)
+        token = cipher.decrypt(bytes(encrypted_token))
+        password = cipher.decrypt(bytes(encrypted_password))
+        pairing_key = bytes(a ^ b for a, b in zip(token, password))
+
+        encrypted_key = cipher.encrypt(pairing_key)
+        await self._write_char(CHAR_MACHINE_SERIAL, encrypted_key)
+
+        assert self._client is not None
+        await self._client.stop_notify(CHAR_MACHINE_SERIAL)
+
+        await asyncio.sleep(1.0)
+        paired = await self.get_pairing_status()
+        if paired:
+            logger.info("Pairing successful!")
+        else:
+            logger.warning("Pairing may have failed — machine not reporting paired")
 
     # ── Factory Reset / Descaling ──────────────────────────────────────────
 

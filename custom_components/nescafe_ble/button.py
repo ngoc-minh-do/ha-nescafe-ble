@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
 from homeassistant.const import EntityCategory
-from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import ACTION_BUTTONS, MANUFACTURER, RECIPE_BUTTONS
+from .const import ACTION_BUTTONS, RECIPE_BUTTONS
 from .coordinator import NescafeDataUpdateCoordinator
+from .device import device_info
 from .nescafe_client import NescafeBleClient
 
 if TYPE_CHECKING:
@@ -32,6 +32,7 @@ async def async_setup_entry(
 ) -> None:
     coordinator = entry.runtime_data
     address = entry.unique_id or ""
+    model = entry.title
 
     entities: list[NescafeButton] = []
 
@@ -40,6 +41,7 @@ async def async_setup_entry(
             NescafeButton(
                 coordinator,
                 address,
+                model,
                 ButtonEntityDescription(
                     key=f"brew_{recipe_key}",
                     translation_key=f"brew_{recipe_key}",
@@ -54,6 +56,7 @@ async def async_setup_entry(
             NescafeButton(
                 coordinator,
                 address,
+                model,
                 ButtonEntityDescription(
                     key=f"action_{action_key}",
                     translation_key=f"action_{action_key}",
@@ -74,6 +77,7 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
         self,
         coordinator: NescafeDataUpdateCoordinator,
         address: str,
+        model: str,
         entity_description: ButtonEntityDescription,
         action: str,
     ) -> None:
@@ -82,12 +86,7 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
         self._action = action
         self._address = address
         self._attr_unique_id = f"{address}_{entity_description.key}"
-        self._attr_device_info = DeviceInfo(
-            connections={(CONNECTION_BLUETOOTH, address)},
-            name="Nescafe Barista",
-            manufacturer=MANUFACTURER,
-            model="Gold Blend Barista Slim (SPM9640)",
-        )
+        self._attr_device_info = device_info(address, model)
 
     async def async_press(self) -> None:
         from bleak_retry_connector import close_stale_connections_by_address

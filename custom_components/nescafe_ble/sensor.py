@@ -15,13 +15,12 @@ from homeassistant.const import (
     PERCENTAGE,
     EntityCategory,
 )
-from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import StateType
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import MANUFACTURER
 from .coordinator import NescafeDataUpdateCoordinator
+from .device import device_info
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -170,10 +169,11 @@ async def async_setup_entry(
 ) -> None:
     coordinator = entry.runtime_data
     address = entry.unique_id or ""
+    model = entry.title
 
     entities: list[NescafeSensor] = []
     for description in SENSOR_DESCRIPTIONS.values():
-        entities.append(NescafeSensor(coordinator, address, description))
+        entities.append(NescafeSensor(coordinator, address, model, description))
 
     async_add_entities(entities)
 
@@ -185,17 +185,13 @@ class NescafeSensor(CoordinatorEntity[NescafeDataUpdateCoordinator], SensorEntit
         self,
         coordinator: NescafeDataUpdateCoordinator,
         address: str,
+        model: str,
         entity_description: SensorEntityDescription,
     ) -> None:
         super().__init__(coordinator)
         self.entity_description = entity_description
         self._attr_unique_id = f"{address}_{entity_description.key}"
-        self._attr_device_info = DeviceInfo(
-            connections={(CONNECTION_BLUETOOTH, address)},
-            name="Nescafe Barista",
-            manufacturer=MANUFACTURER,
-            model="Gold Blend Barista Slim (SPM9640)",
-        )
+        self._attr_device_info = device_info(address, model)
 
     @property
     @override

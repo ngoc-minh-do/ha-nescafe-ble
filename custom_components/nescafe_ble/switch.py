@@ -7,12 +7,11 @@ from typing import TYPE_CHECKING, override
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.const import EntityCategory
-from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import MANUFACTURER
 from .coordinator import NescafeDataUpdateCoordinator
+from .device import device_info
 from .nescafe_client import NescafeBleClient
 
 if TYPE_CHECKING:
@@ -32,10 +31,11 @@ async def async_setup_entry(
 ) -> None:
     coordinator = entry.runtime_data
     address = entry.unique_id or ""
+    model = entry.title
 
     async_add_entities(
         [
-            NescafePowerSwitch(coordinator, address),
+            NescafePowerSwitch(coordinator, address, model),
         ]
     )
 
@@ -47,16 +47,12 @@ class NescafePowerSwitch(CoordinatorEntity[NescafeDataUpdateCoordinator], Switch
         self,
         coordinator: NescafeDataUpdateCoordinator,
         address: str,
+        model: str,
     ) -> None:
         super().__init__(coordinator)
         self._address = address
         self._attr_unique_id = f"{address}_power"
-        self._attr_device_info = DeviceInfo(
-            connections={(CONNECTION_BLUETOOTH, address)},
-            name="Nescafe Barista",
-            manufacturer=MANUFACTURER,
-            model="Gold Blend Barista Slim (SPM9640)",
-        )
+        self._attr_device_info = device_info(address, model)
         self.entity_description = SwitchEntityDescription(
             key="power",
             translation_key="power",

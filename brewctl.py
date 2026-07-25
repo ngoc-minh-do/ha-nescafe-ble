@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-brewctl.py - Nescafé Gold Blend Barista Slim (SPM9640) BLE controller.
+brewctl.py - Nescafe Barista BLE controller.
 
 Compatible with Barista Mini machines using BLE service UUID:
   C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A

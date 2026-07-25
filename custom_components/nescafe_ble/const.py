@@ -1,7 +1,7 @@
 """Constants for the Nescafe BLE integration."""
 
 DOMAIN = "nescafe_ble"
-MANUFACTURER = "Nescafé / De'Longhi"
+MANUFACTURER = "Nescafé"
 
 CONF_ADDRESS = "address"
 CONF_SCAN_INTERVAL = "scan_interval"

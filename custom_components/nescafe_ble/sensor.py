@@ -167,10 +167,8 @@ async def async_setup_entry(
     address = entry.unique_id or ""
 
     entities: list[NescafeSensor] = []
-    for sensor_key in SENSOR_DESCRIPTIONS:
-        entities.append(
-            NescafeSensor(coordinator, address, SENSOR_DESCRIPTIONS[sensor_key])
-        )
+    for description in SENSOR_DESCRIPTIONS.values():
+        entities.append(NescafeSensor(coordinator, address, description))
 
     async_add_entities(entities)
 

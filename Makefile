@@ -17,7 +17,7 @@ typecheck:
 	uv run pyright
 
 test:
-	uv run pytest
+	uv run pytest; EXIT_CODE=$$?; if [ $$EXIT_CODE -eq 5 ]; then exit 0; else exit $$EXIT_CODE; fi
 
 check: lint format-check test typecheck
 

@@ -25,11 +25,13 @@ import struct
 import time
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
+from typing import Any, ClassVar
 
-from bleak import BleakScanner, BleakClient
+from bleak import BleakClient, BleakScanner
 
 logger = logging.getLogger("brewctl")
+
+_local_tz = datetime.now().astimezone().tzinfo
 
 # ── BLE UUIDs ──────────────────────────────────────────────────────────────────
 
@@ -80,7 +82,7 @@ CLIENT_CHAR_CONFIG = "00002902" + BLE_BASE
 # ── Data Models ────────────────────────────────────────────────────────────────
 
 
-@dataclass
+@dataclass(slots=True)
 class MachineStatus:
     error_code: int = 0
     machine_state: int = 255
@@ -88,7 +90,7 @@ class MachineStatus:
     leds_on: int = 0
     leds_blink: int = 0
 
-    MACHINE_STATES = {
+    MACHINE_STATES: ClassVar[dict[int, str]] = {
         0: "init",
         1: "sleep",
         2: "preheat",
@@ -99,7 +101,7 @@ class MachineStatus:
         255: "unknown",
     }
 
-    ERROR_FLAGS = [
+    ERROR_FLAGS: ClassVar[list[str]] = [
         "dosingUnitDirty",
         "mandatoryRinse",
         "lowCoffee",
@@ -121,7 +123,7 @@ class MachineStatus:
         "motorGearboxBroken",
     ]
 
-    PERIPHERAL_FLAGS = [
+    PERIPHERAL_FLAGS: ClassVar[list[str]] = [
         "motorOn",
         "valveJetOn",
         "heatOn",
@@ -133,7 +135,7 @@ class MachineStatus:
         "notUsedPaymentMode",
     ]
 
-    LED_FLAGS = [
+    LED_FLAGS: ClassVar[list[str]] = [
         "redLed",
         "greenLed",
         "espresso",
@@ -171,7 +173,7 @@ class MachineStatus:
         return _bitfield_names(self.leds_blink, self.LED_FLAGS)
 
 
-@dataclass
+@dataclass(slots=True)
 class Counters:
     motor_blocked: int = 0
     motor_dirty: int = 0
@@ -186,7 +188,7 @@ class Counters:
     hot_water: int = 0
 
 
-@dataclass
+@dataclass(slots=True)
 class MachineInfo:
     serial: str = ""
     model: str = ""
@@ -195,7 +197,7 @@ class MachineInfo:
     manufacturer: str = ""
 
 
-@dataclass
+@dataclass(slots=True)
 class CustomRecipe:
     led_index: int = 0
     doses: int = 1
@@ -203,7 +205,7 @@ class CustomRecipe:
     jet_volume: int = 0
 
 
-@dataclass
+@dataclass(slots=True)
 class ScanResult:
     address: str
     name: str
@@ -232,7 +234,7 @@ def _null_terminated_string(data: bytearray | bytes) -> str:
 class BaristaClient:
     def __init__(self, address: str):
         self.address = address
-        self._client: Optional[BleakClient] = None
+        self._client: BleakClient | None = None
         self._notify_queue: asyncio.Queue = asyncio.Queue()
 
     async def connect(self, timeout: float = 15.0):
@@ -260,15 +262,19 @@ class BaristaClient:
     # ── Low-level BLE ops ──────────────────────────────────────────────────
 
     async def _read_char(self, uuid: str) -> bytearray:
+        assert self._client is not None
         return await self._client.read_gatt_char(uuid)
 
     async def _write_char(self, uuid: str, data: bytes):
+        assert self._client is not None
         await self._client.write_gatt_char(uuid, data, response=True)
 
     async def _write_char_no_response(self, uuid: str, data: bytes):
+        assert self._client is not None
         await self._client.write_gatt_char(uuid, data, response=False)
 
     async def _start_notify(self, uuid: str) -> asyncio.Queue:
+        assert self._client is not None
         q: asyncio.Queue = asyncio.Queue()
 
         def handler(_char, data):
@@ -322,48 +328,48 @@ class BaristaClient:
             data = await self._read_char(CHAR_MACHINE_SERIAL)
             info.serial = _null_terminated_string(data)
         except Exception:
-            pass
+            logger.exception("Failed to read machine serial")
 
         try:
             data = await self._read_char(CHAR_MODEL_NUMBER)
             info.model = _null_terminated_string(data)
         except Exception:
-            pass
+            logger.exception("Failed to read model number")
 
         try:
             data = await self._read_char(CHAR_FW_VERSION)
             info.fw_version = _null_terminated_string(data)
         except Exception:
-            pass
+            logger.exception("Failed to read firmware version")
 
         try:
             data = await self._read_char(CHAR_SW_VERSION)
             info.sw_version = _null_terminated_string(data)
         except Exception:
-            pass
+            logger.exception("Failed to read software version")
 
         try:
             data = await self._read_char(CHAR_MANUFACTURER_NAME)
             info.manufacturer = _null_terminated_string(data)
         except Exception:
-            pass
+            logger.exception("Failed to read manufacturer name")
 
         return info
 
     # ── Machine Time ───────────────────────────────────────────────────────
 
-    async def get_machine_time(self) -> Optional[datetime]:
+    async def get_machine_time(self) -> datetime | None:
         data = await self._read_char(CHAR_MACHINE_TIME)
         ts = struct.unpack_from("<I", data, 0)[0]
         if ts == 0:
             return None
-        return datetime.fromtimestamp(ts)
+        return datetime.fromtimestamp(ts, tz=_local_tz)
 
     async def set_machine_time(self):
         ts = int(time.time())
         data = struct.pack("<I", ts)
         await self._write_char(CHAR_MACHINE_TIME, data)
-        logger.info(f"Machine time set to {datetime.fromtimestamp(ts)}")
+        logger.info(f"Machine time set to {datetime.fromtimestamp(ts, tz=_local_tz)}")
 
     # ── Machine Name ───────────────────────────────────────────────────────
 
@@ -412,7 +418,7 @@ class BaristaClient:
     async def toggle_eco_mode(self):
         await self._send_hmi_button(0x02, 0x00)
 
-    RECIPE_MAP = {
+    RECIPE_MAP: ClassVar[dict[str, Any]] = {
         "espresso": start_espresso,
         "lungo": start_lungo,
         "extralungo": start_extra_lungo,

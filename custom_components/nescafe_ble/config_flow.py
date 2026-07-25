@@ -6,12 +6,16 @@ import logging
 from typing import Any, override
 
 import voluptuous as vol
-
 from homeassistant.components.bluetooth import (
     BluetoothServiceInfo,
     async_discovered_service_info,
 )
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult, OptionsFlow
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    ConfigFlowResult,
+    OptionsFlow,
+)
 from homeassistant.const import CONF_ADDRESS
 
 from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN, SCAN_SERVICE_UUID
@@ -106,7 +110,10 @@ class NescafeOptionsFlow(OptionsFlow):
                 data={CONF_SCAN_INTERVAL: user_input[CONF_SCAN_INTERVAL] * 60}
             )
 
-        current = self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL) // 60
+        current = (
+            self.config_entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+            // 60
+        )
 
         return self.async_show_form(
             step_id="init",

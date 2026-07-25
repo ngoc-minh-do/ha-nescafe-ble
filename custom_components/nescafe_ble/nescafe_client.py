@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
+import logging
 import struct
 from dataclasses import dataclass
 from datetime import datetime
+from typing import ClassVar
 
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
+
+_LOGGER = logging.getLogger(__name__)
+_local_tz = datetime.now().astimezone().tzinfo
 
 UUID_BASE = "-6407-4A30-8AAB-CCBBAE8B7A4A"
 BLE_BASE = "-0000-1000-8000-00805F9B34FB"
@@ -38,7 +43,7 @@ class MachineStatus:
     leds_on: int = 0
     leds_blink: int = 0
 
-    MACHINE_STATES = {
+    MACHINE_STATES: ClassVar[dict[int, str]] = {
         0: "init",
         1: "sleep",
         2: "preheat",
@@ -49,7 +54,7 @@ class MachineStatus:
         255: "unknown",
     }
 
-    ERROR_FLAGS = [
+    ERROR_FLAGS: ClassVar[list[str]] = [
         "dosing_unit_dirty",
         "mandatory_rinse",
         "low_coffee",
@@ -71,7 +76,7 @@ class MachineStatus:
         "motor_gearbox_broken",
     ]
 
-    PERIPHERAL_FLAGS = [
+    PERIPHERAL_FLAGS: ClassVar[list[str]] = [
         "motor_on",
         "valve_jet_on",
         "heat_on",
@@ -166,9 +171,11 @@ class NescafeBleClient:
         return self._client is not None and self._client.is_connected
 
     async def _read_char(self, uuid: str) -> bytearray:
+        assert self._client is not None
         return await self._client.read_gatt_char(uuid)
 
     async def _write_char(self, uuid: str, data: bytes) -> None:
+        assert self._client is not None
         await self._client.write_gatt_char(uuid, data, response=True)
 
     async def get_status(self) -> MachineStatus:
@@ -207,27 +214,31 @@ class NescafeBleClient:
             data = await self._read_char(CHAR_MACHINE_SERIAL)
             info.serial = _null_terminated_string(data)
         except Exception:
-            pass
+            _LOGGER.exception("Failed to read machine serial")
+
         try:
             data = await self._read_char(CHAR_MODEL_NUMBER)
             info.model = _null_terminated_string(data)
         except Exception:
-            pass
+            _LOGGER.exception("Failed to read model number")
+
         try:
             data = await self._read_char(CHAR_FW_VERSION)
             info.fw_version = _null_terminated_string(data)
         except Exception:
-            pass
+            _LOGGER.exception("Failed to read firmware version")
+
         try:
             data = await self._read_char(CHAR_SW_VERSION)
             info.sw_version = _null_terminated_string(data)
         except Exception:
-            pass
+            _LOGGER.exception("Failed to read software version")
+
         try:
             data = await self._read_char(CHAR_MANUFACTURER_NAME)
             info.manufacturer = _null_terminated_string(data)
         except Exception:
-            pass
+            _LOGGER.exception("Failed to read manufacturer name")
         return info
 
     async def get_machine_time(self) -> datetime | None:
@@ -235,7 +246,7 @@ class NescafeBleClient:
         ts = struct.unpack_from("<I", data, 0)[0]
         if ts == 0:
             return None
-        return datetime.fromtimestamp(ts)
+        return datetime.fromtimestamp(ts, tz=_local_tz)
 
     async def set_machine_time(self) -> None:
         import time
@@ -275,27 +286,32 @@ class NescafeBleClient:
         try:
             data.counters = await self.get_counters()
         except Exception:
-            pass
+            _LOGGER.exception("Failed to fetch counters")
+
         try:
             data.coffee_level = await self.get_coffee_level()
         except Exception:
-            pass
+            _LOGGER.exception("Failed to fetch coffee level")
+
         try:
             data.info = await self.get_info()
         except Exception:
-            pass
+            _LOGGER.exception("Failed to fetch machine info")
+
         try:
             data.machine_time = await self.get_machine_time()
         except Exception:
-            pass
+            _LOGGER.exception("Failed to fetch machine time")
+
         try:
             data.pairing_status = await self.get_pairing_status()
         except Exception:
-            pass
+            _LOGGER.exception("Failed to fetch pairing status")
+
         try:
             data.machine_name = await self.get_machine_name()
         except Exception:
-            pass
+            _LOGGER.exception("Failed to fetch machine name")
         return data
 
     async def send_hmi_button(self, byte0: int, byte1: int) -> None:

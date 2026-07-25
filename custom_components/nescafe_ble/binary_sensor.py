@@ -100,10 +100,8 @@ async def async_setup_entry(
     address = entry.unique_id or ""
 
     entities: list[NescafeBinarySensor] = []
-    for key in ERROR_BINARY_SENSORS:
-        entities.append(
-            NescafeBinarySensor(coordinator, address, ERROR_BINARY_SENSORS[key])
-        )
+    for description in ERROR_BINARY_SENSORS.values():
+        entities.append(NescafeBinarySensor(coordinator, address, description))
 
     async_add_entities(entities)
 

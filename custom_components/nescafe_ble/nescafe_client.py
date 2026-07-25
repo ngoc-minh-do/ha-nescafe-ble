@@ -88,6 +88,8 @@ class MachineStatus:
         "eco_mode",
         "machine_paired",
         "not_used_payment_mode",
+        "replenish_mode_on",
+        "rfu",
     ]
 
     @property

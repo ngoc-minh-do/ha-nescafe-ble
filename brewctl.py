@@ -137,6 +137,8 @@ class MachineStatus:
         "ecoMode",
         "machinePaired",
         "notUsedPaymentMode",
+        "replenishModeOn",
+        "rfu",
     ]
 
     LED_FLAGS: ClassVar[list[str]] = [

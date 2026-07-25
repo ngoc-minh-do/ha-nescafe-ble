@@ -28,6 +28,10 @@ from datetime import datetime
 from typing import Any, ClassVar
 
 from bleak import BleakClient, BleakScanner
+from bleak_retry_connector import (
+    close_stale_connections_by_address,
+    establish_connection,
+)
 
 logger = logging.getLogger("brewctl")
 
@@ -239,12 +243,17 @@ class BaristaClient:
 
     async def connect(self, timeout: float = 15.0):
         logger.info(f"Connecting to {self.address} ...")
-        self._client = BleakClient(
+        await close_stale_connections_by_address(self.address)
+        device = await BleakScanner.find_device_by_address(self.address)
+        if not device:
+            raise ConnectionError(f"Device {self.address} not found")
+        self._client = await establish_connection(
+            BleakClient,
+            device,
             self.address,
-            timeout=timeout,
             disconnected_callback=self._on_disconnect,
+            timeout=timeout,
         )
-        await self._client.connect()
         logger.info("Connected")
 
     async def disconnect(self):

@@ -11,6 +11,7 @@ from typing import Any, ClassVar
 
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
+from bleak_retry_connector import establish_connection
 
 _LOGGER = logging.getLogger(__name__)
 _local_tz = datetime.now().astimezone().tzinfo
@@ -157,11 +158,12 @@ class NescafeBleClient:
         self._client: BleakClient | None = None
 
     async def connect(self, timeout: float = 15.0) -> None:
-        self._client = BleakClient(
+        self._client = await establish_connection(
+            BleakClient,
             self._ble_device,
+            self._ble_device.address,
             timeout=timeout,
         )
-        await self._client.connect()
 
     async def disconnect(self) -> None:
         if self._client and self._client.is_connected:

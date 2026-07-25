@@ -542,6 +542,13 @@ class BaristaClient:
     async def set_descaling_mode(self):
         await self._write_char(CHAR_PARAMETER_BITS_PAIRED, bytes([0x02]))
 
+    async def reset_to_production_mode(self):
+        await self._write_char(CHAR_PARAMETER_BITS_PAIRED, bytes([0x08]))
+
+    async def get_parameter_bits_paired(self) -> int:
+        data = await self._read_char(CHAR_PARAMETER_BITS_PAIRED)
+        return data[0]
+
     # ── BLE LED ────────────────────────────────────────────────────────────
 
     async def set_led(self, mode: int):
@@ -755,6 +762,35 @@ async def _cmd_descale(args):
         await c.disconnect()
 
 
+_BITS_PAIRED_LABELS = {
+    1: "descaling_mode",
+    2: "factory_reset",
+    3: "reset_to_production",
+}
+
+
+async def _cmd_paired_bits(args):
+    c = BaristaClient(args.mac)
+    try:
+        await c.connect()
+        bits = await c.get_parameter_bits_paired()
+        print(f"Parameter bits paired: 0x{bits:02X}")
+        for bit, label in _BITS_PAIRED_LABELS.items():
+            print(f"  bit {bit} ({label}): {(bits >> bit) & 1}")
+    finally:
+        await c.disconnect()
+
+
+async def _cmd_reset_production(args):
+    c = BaristaClient(args.mac)
+    try:
+        await c.connect()
+        await c.reset_to_production_mode()
+        print("Reset to production mode command sent.")
+    finally:
+        await c.disconnect()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Nescafé Barista Mini BLE Controller",
@@ -823,6 +859,12 @@ def main():
     p_descale = sub.add_parser("descale", help="Set descaling mode")
     p_descale.add_argument("mac", help="Machine MAC address")
 
+    p_paired = sub.add_parser("paired-bits", help="Read parameter bits paired")
+    p_paired.add_argument("mac", help="Machine MAC address")
+
+    p_resetprod = sub.add_parser("reset-production", help="Reset to production mode")
+    p_resetprod.add_argument("mac", help="Machine MAC address")
+
     args = parser.parse_args()
     _setup_logging(args.verbose)
 
@@ -844,6 +886,8 @@ def main():
         "recipes": _cmd_recipes,
         "factory-reset": _cmd_factory_reset,
         "descale": _cmd_descale,
+        "paired-bits": _cmd_paired_bits,
+        "reset-production": _cmd_reset_production,
     }
 
     handler = commands.get(args.command)

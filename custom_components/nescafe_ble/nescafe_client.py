@@ -406,3 +406,10 @@ class NescafeBleClient:
 
     async def set_descaling_mode(self) -> None:
         await self._write_char(CHAR_PARAMETER_BITS_PAIRED, bytes([0x02]))
+
+    async def reset_to_production_mode(self) -> None:
+        await self._write_char(CHAR_PARAMETER_BITS_PAIRED, bytes([0x08]))
+
+    async def get_parameter_bits_paired(self) -> int:
+        data = await self._read_char(CHAR_PARAMETER_BITS_PAIRED)
+        return data[0]

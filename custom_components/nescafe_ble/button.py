@@ -135,6 +135,8 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
             await client.factory_reset()
         elif action == "descale":
             await client.set_descaling_mode()
+        elif action == "reset_to_production":
+            await client.reset_to_production_mode()
         elif action == "sync_time":
             await client.set_machine_time()
         elif action == "eco_mode":

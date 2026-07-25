@@ -141,6 +141,7 @@ class NescafeData:
     pairing_status: bool | None = None
     machine_name: str | None = None
     recipes: dict[str, list[int]] | None = None
+    parameter_bits_paired: int | None = None
 
 
 def _null_terminated_string(data: bytearray | bytes) -> str:
@@ -327,6 +328,11 @@ class NescafeBleClient:
             data.machine_name = await self.get_machine_name()
         except Exception:
             _LOGGER.exception("Failed to fetch machine name")
+
+        try:
+            data.parameter_bits_paired = await self.get_parameter_bits_paired()
+        except Exception:
+            _LOGGER.exception("Failed to fetch parameter bits paired")
         return data
 
     async def send_hmi_button(self, byte0: int, byte1: int) -> None:

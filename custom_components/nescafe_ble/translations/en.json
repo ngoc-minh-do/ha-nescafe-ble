@@ -48,7 +48,8 @@
       "model": { "name": "Model" },
       "serial": { "name": "Serial Number" },
       "manufacturer": { "name": "Manufacturer" },
-      "machine_name": { "name": "Machine Name" }
+      "machine_name": { "name": "Machine Name" },
+      "parameter_bits_paired": { "name": "Active Modes" }
     },
     "binary_sensor": {
       "dosing_unit_dirty": { "name": "Dosing Unit Dirty" },
@@ -74,6 +75,7 @@
       "action_pair": { "name": "Pair Machine" },
       "action_factory_reset": { "name": "Factory Reset" },
       "action_descale": { "name": "Descaling Mode" },
+      "action_reset_to_production": { "name": "Reset to Production Mode" },
       "action_sync_time": { "name": "Sync Time" },
       "action_eco_mode": { "name": "Eco Mode" }
     },

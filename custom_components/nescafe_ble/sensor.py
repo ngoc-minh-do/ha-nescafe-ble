@@ -153,6 +153,11 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         translation_key="machine_name",
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
+    "parameter_bits_paired": SensorEntityDescription(
+        key="parameter_bits_paired",
+        translation_key="parameter_bits_paired",
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 }
 
 PARALLEL_UPDATES = 0
@@ -213,6 +218,22 @@ class NescafeSensor(CoordinatorEntity[NescafeDataUpdateCoordinator], SensorEntit
             if data.info is None:
                 return None
             return getattr(data.info, key, None)
+
+        if key == "parameter_bits_paired":
+            bits = data.parameter_bits_paired
+            if bits is None:
+                return None
+            flags = []
+            if (bits >> 1) & 1:
+                flags.append("Descaling mode")
+            if (bits >> 2) & 1:
+                flags.append("Factory reset")
+            if (bits >> 3) & 1:
+                flags.append("Production reset")
+            self._attr_extra_state_attributes = {
+                "raw_bits": bits,
+            }
+            return ", ".join(flags) if flags else "None"
 
         if key in (
             "espresso",

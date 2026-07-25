@@ -41,6 +41,7 @@ ACTION_BUTTONS = {
     "pair": "Pair",
     "factory_reset": "Factory Reset",
     "descale": "Descale",
+    "reset_to_production": "Reset to Production Mode",
     "sync_time": "Sync Time",
     "eco_mode": "Eco Mode",
 }

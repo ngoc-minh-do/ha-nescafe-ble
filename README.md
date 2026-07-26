@@ -1,1 +1,99 @@
 # ha-nescafe-ble
+
+Home Assistant custom integration for Nescafé Barista BLE machines (Barista Mini).
+
+## Features
+
+- **Machine status** — state (sleep/preheat/ready/extract), error flags, peripheral flags
+- **Coffee level** — bean hopper level sensor
+- **Usage counters** — espresso, lungo, extra lungo, cappuccino, latte macchiato, hot water, rinse, custom recipe, motor events
+- **Machine info** — serial, model, firmware version, manufacturer
+- **Machine time** — read and sync
+- **Brew buttons** — one-click brew for all recipes
+- **Action buttons** — pair, factory reset, descaling mode, eco mode, sync time, reset to production
+- **Power switch** — turn machine on/off
+- **Error binary sensors** — dosing unit dirty, low coffee, no water, drawer open, overheating, etc.
+
+## Supported Machines
+
+Compatible with machines using the BLE service UUID `C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A`. Developed and tested on **Nescafé Barista Mini**.
+
+## Installation
+
+### HACS (recommended)
+
+1. Add this repository as a custom repository in HACS
+2. Search for "Nescafé BLE" and install
+3. Restart HA
+
+### Manual
+
+```bash
+git clone https://github.com/ngoc-minh-do/ha-nescafe-ble
+cp -r custom_components/nescafe_ble /path/to/config/custom_components/
+```
+
+## Configuration
+
+The integration is discovered automatically via Bluetooth. When HA detects a Barista machine nearby, a configuration notification appears. Alternatively, go to **Settings → Devices → Add Integration → Nescafé BLE**.
+
+Options:
+- **Polling interval** — how often to read machine data (default: 60s)
+
+## BLE Pairing
+
+Some characteristics (counters, parameter bits, HMI button commands) require BLE bonding. The integration calls `pair()` automatically before accessing protected data. Pairing only works when the HA Bluetooth adapter supports it:
+
+- **ESP32 BLE proxy**: supported via the `pair()` command (ESPHome ≥2024.3.0 required)
+- **Direct USB/Built-in BLE adapter**: supported
+
+If pairing is unavailable, the integration falls back gracefully — unprotected data (status, coffee level, machine info) is still available.
+
+## CLI Tool (`brewctl.py`)
+
+A standalone CLI for controlling the machine outside of Home Assistant:
+
+```bash
+# Scan for machines
+brewctl.py scan
+
+# Read status
+brewctl.py status AA:BB:CC:DD:EE:FF
+
+# Brew a recipe
+brewctl.py brew AA:BB:CC:DD:EE:FF espresso
+
+# Toggle power
+brewctl.py power AA:BB:CC:DD:EE:FF
+
+# Read counters
+brewctl.py counters AA:BB:CC:DD:EE:FF
+
+# Pair
+brewctl.py pair AA:BB:CC:DD:EE:FF
+
+# Sync time
+brewctl.py set-time AA:BB:CC:DD:EE:FF
+```
+
+## Development
+
+```bash
+uv sync
+make install     # Install deps + pre-commit
+make lint        # ruff check
+make format      # ruff format
+make typecheck   # pyright
+make test        # pytest
+make check       # lint + format-check + test + typecheck
+```
+
+## Protocol
+
+The machine exposes a BLE GATT service at `C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A` with characteristics for status, counters, HMI button commands, recipes, and configuration. Full BLE UUID map is in `nescafe_client.py` and `brewctl.py`.
+
+Decompiled Android SDK sources are in `nescafe-android/` and `nescafe-source/` for reference.
+
+## License
+
+MIT

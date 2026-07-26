@@ -22,9 +22,14 @@ Compatible with machines using the BLE service UUID `c08b0100-6407-4a30-8aab-ccb
 
 ### HACS (recommended)
 
-1. Add this repository as a custom repository in HACS
-2. Search for "Nescafé BLE" and install
-3. Restart HA
+[![Open your Home Assistant instance and open the HACS repository.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ngoc-minh-do&repository=ha-nescafe-ble&category=integration)
+
+Or manually:
+
+1. Open HACS → **Integrations** → **⋮** → **Custom repositories**
+2. Paste `https://github.com/ngoc-minh-do/ha-nescafe-ble` and select **Integration**
+3. Search for **Nescafé BLE** and install
+4. Restart HA
 
 ### Manual
 

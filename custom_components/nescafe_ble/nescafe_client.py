@@ -161,6 +161,7 @@ class NescafeBleClient:
         self._client: BleakClient | None = None
 
     async def connect(self, timeout: float = 15.0) -> None:
+        _LOGGER.debug("connect: connecting to %s", self._ble_device.address)
         self._client = await establish_connection(
             BleakClient,
             self._ble_device,
@@ -170,6 +171,7 @@ class NescafeBleClient:
 
     async def _try_pair(self) -> None:
         assert self._client is not None
+        _LOGGER.debug("_try_pair: pairing")
         try:
             await asyncio.wait_for(self._client.pair(), timeout=5.0)
         except NotImplementedError:
@@ -177,6 +179,7 @@ class NescafeBleClient:
 
     async def disconnect(self) -> None:
         if self._client and self._client.is_connected:
+            _LOGGER.debug("disconnect")
             await self._client.disconnect()
 
     @property
@@ -185,11 +188,16 @@ class NescafeBleClient:
 
     async def _read_char(self, uuid: str) -> bytearray:
         assert self._client is not None
-        return await self._client.read_gatt_char(uuid)
+        _LOGGER.debug("_read_char: uuid=%s", uuid)
+        data = await self._client.read_gatt_char(uuid)
+        _LOGGER.debug("_read_char: uuid=%s data=%s", uuid, data.hex())
+        return data
 
     async def _write_char(self, uuid: str, data: bytes) -> None:
         assert self._client is not None
+        _LOGGER.debug("_write_char: uuid=%s data=%s", uuid, data.hex())
         await self._client.write_gatt_char(uuid, data, response=True)
+        _LOGGER.debug("_write_char: done uuid=%s", uuid)
 
     async def _start_notify(self, uuid: str) -> asyncio.Queue[bytearray]:
         assert self._client is not None
@@ -198,6 +206,7 @@ class NescafeBleClient:
         def handler(_char: Any, data: bytearray) -> None:
             q.put_nowait(bytearray(data))
 
+        _LOGGER.debug("_start_notify: uuid=%s", uuid)
         await self._client.start_notify(uuid, handler)
         return q
 
@@ -388,6 +397,7 @@ class NescafeBleClient:
 
     async def perform_pairing(self) -> bool:
         assert self._client is not None
+        _LOGGER.debug("perform_pairing: pairing")
         try:
             await asyncio.wait_for(self._client.pair(), timeout=5.0)
         except NotImplementedError:

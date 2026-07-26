@@ -249,6 +249,7 @@ class BaristaClient:
         device = await BleakScanner.find_device_by_address(self.address)
         if not device:
             raise ConnectionError(f"Device {self.address} not found")
+        logger.debug("connect: establishing connection")
         self._client = await establish_connection(
             BleakClient,
             device,
@@ -260,11 +261,12 @@ class BaristaClient:
 
     async def disconnect(self):
         if self._client and self._client.is_connected:
+            logger.debug("disconnect")
             await self._client.disconnect()
             logger.info("Disconnected")
 
     def _on_disconnect(self, client: BleakClient):
-        logger.warning("Device disconnected")
+        logger.debug("Device disconnected")
 
     @property
     def is_connected(self) -> bool:
@@ -274,6 +276,7 @@ class BaristaClient:
 
     async def _try_pair(self) -> None:
         assert self._client is not None
+        logger.debug("_try_pair: pairing")
         try:
             await asyncio.wait_for(self._client.pair(), timeout=5.0)
         except NotImplementedError:
@@ -281,15 +284,16 @@ class BaristaClient:
 
     async def _read_char(self, uuid: str) -> bytearray:
         assert self._client is not None
-        return await self._client.read_gatt_char(uuid)
+        logger.debug("_read_char: uuid=%s", uuid)
+        data = await self._client.read_gatt_char(uuid)
+        logger.debug("_read_char: uuid=%s data=%s", uuid, data.hex())
+        return data
 
     async def _write_char(self, uuid: str, data: bytes):
         assert self._client is not None
+        logger.debug("_write_char: uuid=%s data=%s", uuid, data.hex())
         await self._client.write_gatt_char(uuid, data, response=True)
-
-    async def _write_char_no_response(self, uuid: str, data: bytes):
-        assert self._client is not None
-        await self._client.write_gatt_char(uuid, data, response=False)
+        logger.debug("_write_char: done uuid=%s", uuid)
 
     async def _start_notify(self, uuid: str) -> asyncio.Queue:
         assert self._client is not None
@@ -298,6 +302,7 @@ class BaristaClient:
         def handler(_char, data):
             q.put_nowait(bytearray(data))
 
+        logger.debug("_start_notify: uuid=%s", uuid)
         await self._client.start_notify(uuid, handler)
         return q
 
@@ -506,6 +511,7 @@ class BaristaClient:
 
     async def perform_pairing(self):
         assert self._client is not None
+        logger.debug("perform_pairing: pairing")
         try:
             await asyncio.wait_for(self._client.pair(), timeout=5.0)
         except NotImplementedError:

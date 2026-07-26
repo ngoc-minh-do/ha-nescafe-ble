@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-brewctl.py - Nescafe Barista BLE controller.
+brewctl.py - Nescafé Gold Blend Barista BLE controller.
 
-Compatible with Barista Mini machines using BLE service UUID:
+Compatible with Nescafé Gold Blend Barista machines using BLE service UUID:
   C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A
 
 Usage:
@@ -551,7 +551,9 @@ class BaristaClient:
 
 
 async def scan_machines(timeout: float = 5.0) -> list[ScanResult]:
-    logger.info(f"Scanning for Barista Mini machines (timeout={timeout}s) ...")
+    logger.info(
+        f"Scanning for Nescafé Gold Blend Barista machines (timeout={timeout}s) ..."
+    )
     results: list[ScanResult] = []
 
     def callback(device, advertisement_data):
@@ -617,7 +619,7 @@ def _print_info(info: MachineInfo):
 async def _cmd_scan(_args):
     machines = await scan_machines(timeout=_args.timeout)
     if not machines:
-        print("No Barista Mini machines found.")
+        print("No Nescafé Gold Blend Barista machines found.")
         return
     print(f"Found {len(machines)} machine(s):")
     for m in machines:
@@ -794,7 +796,7 @@ async def _cmd_reset_production(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Nescafé Barista Mini BLE Controller",
+        description="Nescafé Gold Blend Barista BLE Controller",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""examples:
   %(prog)s scan

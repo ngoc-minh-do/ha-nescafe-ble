@@ -1,6 +1,6 @@
 # ha-nescafe-ble
 
-Home Assistant custom integration for Nescafé Barista BLE machines (Barista Mini).
+Home Assistant custom integration for Nescafé Gold Blend Barista BLE machines (Barista Mini).
 
 ## Features
 
@@ -16,7 +16,7 @@ Home Assistant custom integration for Nescafé Barista BLE machines (Barista Min
 
 ## Supported Machines
 
-Compatible with machines using the BLE service UUID `C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A`. Developed and tested on **Nescafé Barista Mini**.
+Compatible with machines using the BLE service UUID `C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A`. Developed and tested on **Nescafé Gold Blend Barista**.
 
 ## Installation
 

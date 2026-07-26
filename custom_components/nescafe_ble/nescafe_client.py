@@ -1,4 +1,4 @@
-"""Nescafé Barista BLE client for Home Assistant."""
+"""Nescafé Gold Blend Barista BLE client for Home Assistant."""
 
 from __future__ import annotations
 

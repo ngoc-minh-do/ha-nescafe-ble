@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "bluetooth": [
     {
-      "service_uuid": "C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A"
+      "service_uuid": "c08b0100-6407-4a30-8aab-ccbbae8b7a4a"
     }
   ],
   "codeowners": ["@ngoc-minh-do"],

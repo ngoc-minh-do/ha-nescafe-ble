@@ -16,7 +16,7 @@ Home Assistant custom integration for Nescafé Gold Blend Barista BLE machines (
 
 ## Supported Machines
 
-Compatible with machines using the BLE service UUID `C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A`. Developed and tested on **Nescafé Gold Blend Barista**.
+Compatible with machines using the BLE service UUID `c08b0100-6407-4a30-8aab-ccbbae8b7a4a`. Developed and tested on **Nescafé Gold Blend Barista**.
 
 ## Installation
 
@@ -90,7 +90,7 @@ make check       # lint + format-check + test + typecheck
 
 ## Protocol
 
-The machine exposes a BLE GATT service at `C08B0100-6407-4A30-8AAB-CCBBAE8B7A4A` with characteristics for status, counters, HMI button commands, recipes, and configuration. Full BLE UUID map is in `nescafe_client.py` and `brewctl.py`.
+The machine exposes a BLE GATT service at `c08b0100-6407-4a30-8aab-ccbbae8b7a4a` with characteristics for status, counters, HMI button commands, recipes, and configuration. Full BLE UUID map is in `nescafe_client.py` and `brewctl.py`.
 
 Decompiled Android SDK sources are in `nescafe-android/` and `nescafe-source/` for reference.
 

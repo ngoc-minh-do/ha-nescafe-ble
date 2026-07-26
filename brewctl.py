@@ -272,6 +272,13 @@ class BaristaClient:
 
     # ── Low-level BLE ops ──────────────────────────────────────────────────
 
+    async def _try_pair(self) -> None:
+        assert self._client is not None
+        try:
+            await asyncio.wait_for(self._client.pair(), timeout=5.0)
+        except NotImplementedError:
+            pass
+
     async def _read_char(self, uuid: str) -> bytearray:
         assert self._client is not None
         return await self._client.read_gatt_char(uuid)
@@ -498,43 +505,26 @@ class BaristaClient:
         return bool((peripheral_state >> 7) & 1)
 
     async def perform_pairing(self):
-        from Crypto.Cipher import AES
-
-        logger.info("Starting full pairing protocol...")
-
-        q = await self._start_notify(CHAR_MACHINE_SERIAL)
-
-        logger.debug("Reading status to trigger token notification...")
-        await self._read_char(CHAR_BARISTA_STATUS)
-        encrypted_token = await asyncio.wait_for(q.get(), timeout=10.0)
-        logger.debug("Encrypted token received (%d bytes)", len(encrypted_token))
-
-        pairing_bytes = "WE START PAIRING".encode("ascii").ljust(16, b"\x00")[:16]
-        await self._write_char(CHAR_MACHINE_SERIAL, pairing_bytes)
-        encrypted_password = await asyncio.wait_for(q.get(), timeout=10.0)
-        logger.debug("Encrypted password received (%d bytes)", len(encrypted_password))
-
-        logger.info("Press the button on your machine within 10 seconds...")
-        aes_key = await asyncio.wait_for(q.get(), timeout=15.0)
-        logger.debug("AES key received (%d bytes)", len(aes_key))
-
-        cipher = AES.new(bytes(aes_key), AES.MODE_ECB)
-        token = cipher.decrypt(bytes(encrypted_token))
-        password = cipher.decrypt(bytes(encrypted_password))
-        pairing_key = bytes(a ^ b for a, b in zip(token, password))
-
-        encrypted_key = cipher.encrypt(pairing_key)
-        await self._write_char(CHAR_MACHINE_SERIAL, encrypted_key)
-
         assert self._client is not None
-        await self._client.stop_notify(CHAR_MACHINE_SERIAL)
+        try:
+            await asyncio.wait_for(self._client.pair(), timeout=5.0)
+        except NotImplementedError:
+            logger.warning("BLE pairing not supported by this adapter")
+            return False
+        except TimeoutError:
+            logger.warning("BLE pairing timed out")
+            return False
 
-        await asyncio.sleep(1.0)
-        paired = await self.get_pairing_status()
-        if paired:
-            logger.info("Pairing successful!")
-        else:
-            logger.warning("Pairing may have failed — machine not reporting paired")
+        for _ in range(30):
+            await asyncio.sleep(1.0)
+            try:
+                if await self.get_pairing_status():
+                    logger.info("Pairing successful!")
+                    return True
+            except Exception:
+                pass
+        logger.warning("Pairing not confirmed within 30s")
+        return False
 
     # ── Factory Reset / Descaling ──────────────────────────────────────────
 
@@ -648,6 +638,7 @@ async def _cmd_counters(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         counters = await c.get_counters()
         _print_counters(counters)
     finally:
@@ -678,6 +669,7 @@ async def _cmd_brew(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         await c.start_recipe(args.recipe)
         print(f"Started: {args.recipe}")
     finally:
@@ -688,6 +680,7 @@ async def _cmd_power(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         await c.power_on_off()
         print("Power toggled.")
     finally:
@@ -707,6 +700,7 @@ async def _cmd_custom_recipe(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         recipe = CustomRecipe(
             led_index=args.led,
             doses=args.doses,
@@ -737,6 +731,7 @@ async def _cmd_recipes(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         recipes = await c.get_recipes()
         for name, data in recipes.items():
             print(f"  {name:20s} {[int(b) for b in data]}")
@@ -748,6 +743,7 @@ async def _cmd_factory_reset(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         await c.factory_reset()
         print("Factory reset command sent.")
     finally:
@@ -758,6 +754,7 @@ async def _cmd_descale(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         await c.set_descaling_mode()
         print("Descaling mode set.")
     finally:
@@ -775,6 +772,7 @@ async def _cmd_paired_bits(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         bits = await c.get_parameter_bits_paired()
         print(f"Parameter bits paired: 0x{bits:02X}")
         for bit, label in _BITS_PAIRED_LABELS.items():
@@ -787,6 +785,7 @@ async def _cmd_reset_production(args):
     c = BaristaClient(args.mac)
     try:
         await c.connect()
+        await c._try_pair()
         await c.reset_to_production_mode()
         print("Reset to production mode command sent.")
     finally:

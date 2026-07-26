@@ -103,6 +103,7 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
         client = NescafeBleClient(ble_device)
         try:
             await client.connect(timeout=15.0)
+            await client._try_pair()
             await self._execute_action(client)
         except Exception:
             _LOGGER.exception("Failed to execute action %s", self._action)

@@ -168,6 +168,13 @@ class NescafeBleClient:
             timeout=timeout,
         )
 
+    async def _try_pair(self) -> None:
+        assert self._client is not None
+        try:
+            await asyncio.wait_for(self._client.pair(), timeout=5.0)
+        except NotImplementedError:
+            pass
+
     async def disconnect(self) -> None:
         if self._client and self._client.is_connected:
             await self._client.disconnect()
@@ -301,40 +308,48 @@ class NescafeBleClient:
     async def fetch_all(self) -> NescafeData:
         data = NescafeData()
         data.status = await self.get_status()
-        try:
-            data.counters = await self.get_counters()
-        except Exception:
-            _LOGGER.exception("Failed to fetch counters")
 
         try:
             data.coffee_level = await self.get_coffee_level()
         except Exception:
-            _LOGGER.exception("Failed to fetch coffee level")
+            _LOGGER.warning("Failed to fetch coffee level")
 
         try:
             data.info = await self.get_info()
         except Exception:
-            _LOGGER.exception("Failed to fetch machine info")
+            _LOGGER.warning("Failed to fetch machine info")
 
         try:
             data.machine_time = await self.get_machine_time()
         except Exception:
-            _LOGGER.exception("Failed to fetch machine time")
+            _LOGGER.warning("Failed to fetch machine time")
 
         try:
             data.pairing_status = await self.get_pairing_status()
         except Exception:
-            _LOGGER.exception("Failed to fetch pairing status")
+            _LOGGER.warning("Failed to fetch pairing status")
 
         try:
             data.machine_name = await self.get_machine_name()
         except Exception:
-            _LOGGER.exception("Failed to fetch machine name")
+            _LOGGER.warning("Failed to fetch machine name")
+
+        try:
+            await self._try_pair()
+        except Exception:
+            _LOGGER.warning(
+                "BLE pairing failed — protected characteristics unavailable"
+            )
+
+        try:
+            data.counters = await self.get_counters()
+        except Exception:
+            _LOGGER.warning("Failed to fetch counters")
 
         try:
             data.parameter_bits_paired = await self.get_parameter_bits_paired()
         except Exception:
-            _LOGGER.exception("Failed to fetch parameter bits paired")
+            _LOGGER.warning("Failed to fetch parameter bits paired")
         return data
 
     async def send_hmi_button(self, byte0: int, byte1: int) -> None:
@@ -372,42 +387,26 @@ class NescafeBleClient:
         await self.send_hmi_button(0x02, 0x00)
 
     async def perform_pairing(self) -> bool:
-        from Crypto.Cipher import AES
-
-        q = await self._start_notify(CHAR_MACHINE_SERIAL)
-
-        _LOGGER.debug("Reading status to trigger token notification...")
-        await self._read_char(CHAR_BARISTA_STATUS)
-        encrypted_token = await asyncio.wait_for(q.get(), timeout=10.0)
-        _LOGGER.debug("Encrypted token received (%d bytes)", len(encrypted_token))
-
-        pairing_msg = "WE START PAIRING".encode("ascii").ljust(16, b"\x00")[:16]
-        await self._write_char(CHAR_MACHINE_SERIAL, pairing_msg)
-        encrypted_password = await asyncio.wait_for(q.get(), timeout=10.0)
-        _LOGGER.debug("Encrypted password received (%d bytes)", len(encrypted_password))
-
-        _LOGGER.info("Press the button on the machine within 10 seconds...")
-        aes_key = await asyncio.wait_for(q.get(), timeout=15.0)
-        _LOGGER.debug("AES key received (%d bytes)", len(aes_key))
-
-        cipher = AES.new(bytes(aes_key), AES.MODE_ECB)
-        token = cipher.decrypt(bytes(encrypted_token))
-        password = cipher.decrypt(bytes(encrypted_password))
-        pairing_key = bytes(a ^ b for a, b in zip(token, password))
-
-        encrypted_key = cipher.encrypt(pairing_key)
-        await self._write_char(CHAR_MACHINE_SERIAL, encrypted_key)
-
         assert self._client is not None
-        await self._client.stop_notify(CHAR_MACHINE_SERIAL)
+        try:
+            await asyncio.wait_for(self._client.pair(), timeout=5.0)
+        except NotImplementedError:
+            _LOGGER.warning("BLE pairing not supported by this adapter")
+            return False
+        except TimeoutError:
+            _LOGGER.warning("BLE pairing timed out")
+            return False
 
-        await asyncio.sleep(1.0)
-        paired = await self.get_pairing_status()
-        if paired:
-            _LOGGER.info("Pairing successful")
-        else:
-            _LOGGER.warning("Pairing may have failed — machine not reporting paired")
-        return paired
+        for _ in range(30):
+            await asyncio.sleep(1.0)
+            try:
+                if await self.get_pairing_status():
+                    _LOGGER.info("Pairing successful")
+                    return True
+            except Exception:
+                pass
+        _LOGGER.warning("Pairing not confirmed within 10s")
+        return False
 
     async def factory_reset(self) -> None:
         await self._write_char(CHAR_PARAMETER_BITS_PAIRED, bytes([0x04]))

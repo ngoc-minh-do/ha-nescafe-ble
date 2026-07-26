@@ -89,6 +89,7 @@ class NescafePowerSwitch(CoordinatorEntity[NescafeDataUpdateCoordinator], Switch
         client = NescafeBleClient(ble_device)
         try:
             await client.connect(timeout=15.0)
+            await client._try_pair()
             await client.power_on_off()
         except Exception:
             _LOGGER.exception("Failed to toggle power")

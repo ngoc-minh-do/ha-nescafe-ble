@@ -1,7 +1,6 @@
 {
   "domain": "nescafe_ble",
   "name": "Nescafé BLE",
-  "version": "0.1.0",
   "bluetooth": [
     {
       "service_uuid": "c08b0100-6407-4a30-8aab-ccbbae8b7a4a"
@@ -11,10 +10,11 @@
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
   "documentation": "https://github.com/ngoc-minh-do/ha-nescafe-ble",
-  "issue_tracker": "https://github.com/ngoc-minh-do/ha-nescafe-ble/issues",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/ngoc-minh-do/ha-nescafe-ble/issues",
   "requirements": [
-      "bleak",
-      "bleak-retry-connector"
-  ]
+    "bleak",
+    "bleak-retry-connector"
+  ],
+  "version": "0.1.0"
 }

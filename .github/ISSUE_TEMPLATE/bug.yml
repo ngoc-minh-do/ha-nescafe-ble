@@ -1,0 +1,50 @@
+name: Bug Report
+description: Report an issue with the Nescafé BLE integration
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: version
+    attributes:
+      label: Integration Version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: ha_version
+    attributes:
+      label: Home Assistant Version
+      placeholder: "2024.7.0"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Nescafé Device Model
+      placeholder: "Nescafé Gold Blend Barista"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the Bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug Logs
+      description: |
+        Enable debug logging for this integration and paste relevant logs.
+        Add this to your `configuration.yaml`:
+        ```yaml
+        logger:
+          logs:
+            custom_components.nescafe_ble: debug
+        ```
+      render: text

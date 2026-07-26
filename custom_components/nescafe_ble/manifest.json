@@ -10,7 +10,7 @@
   "codeowners": ["@ngoc-minh-do"],
   "config_flow": true,
   "dependencies": ["bluetooth_adapters"],
-  "documentation": "https://github.com/ngoc/ha-nescafe-ble",
+  "documentation": "https://github.com/ngoc-minh-do/ha-nescafe-ble",
   "issue_tracker": "https://github.com/ngoc-minh-do/ha-nescafe-ble/issues",
   "iot_class": "local_polling",
   "requirements": [

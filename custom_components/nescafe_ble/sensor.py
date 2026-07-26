@@ -210,7 +210,15 @@ class NescafeSensor(CoordinatorEntity[NescafeDataUpdateCoordinator], SensorEntit
         if key == "coffee_level":
             return data.coffee_level
 
-        if key in ("firmware", "model", "serial", "manufacturer", "machine_name"):
+        if key == "firmware":
+            if data.info is None:
+                return None
+            return data.info.fw_version or None
+
+        if key == "machine_name":
+            return data.machine_name
+
+        if key in ("model", "serial", "manufacturer"):
             if data.info is None:
                 return None
             return getattr(data.info, key, None)

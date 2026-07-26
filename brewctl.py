@@ -396,7 +396,7 @@ class BaristaClient:
         return _null_terminated_string(data)
 
     async def set_machine_name(self, name: str):
-        name_bytes = name.encode("utf-8")[:20]
+        name_bytes = name.encode("utf-8")[:21].ljust(21, b"\x00")
         await self._write_char(CHAR_MACHINE_NAME, name_bytes)
         logger.info(f"Machine name set to '{name}'")
 

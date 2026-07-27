@@ -81,6 +81,16 @@ brewctl.py pair AA:BB:CC:DD:EE:FF
 brewctl.py set-time AA:BB:CC:DD:EE:FF
 ```
 
+## Example Card
+
+A `dashboard.yaml` is included with an example card view using `stack-in-card`, `button-card`, and built-in button entities. It shows machine status with warnings (no water, rinse, low beans), quick rinse/power toggles, and a 3-column brew grid.
+
+Requires these HACS frontend plugins:
+- [stack-in-card](https://github.com/custom-cards/stack-in-card)
+- [button-card](https://github.com/custom-cards/button-card)
+
+Paste the contents of `dashboard.yaml` into an **Edit as YAML** dashboard view, or embed it as a card in your existing dashboard using `Manual` card type.
+
 ## Development
 
 ```bash

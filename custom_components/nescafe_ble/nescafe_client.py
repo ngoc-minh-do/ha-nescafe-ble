@@ -320,44 +320,44 @@ class NescafeBleClient:
 
         try:
             data.coffee_level = await self.get_coffee_level()
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOGGER.warning("Failed to fetch coffee level")
 
         try:
             data.info = await self.get_info()
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOGGER.warning("Failed to fetch machine info")
 
         try:
             data.machine_time = await self.get_machine_time()
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOGGER.warning("Failed to fetch machine time")
 
         try:
             data.pairing_status = await self.get_pairing_status()
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOGGER.warning("Failed to fetch pairing status")
 
         try:
             data.machine_name = await self.get_machine_name()
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOGGER.warning("Failed to fetch machine name")
 
         try:
             await self._try_pair()
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOGGER.warning(
                 "BLE pairing failed — protected characteristics unavailable"
             )
 
         try:
             data.counters = await self.get_counters()
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOGGER.warning("Failed to fetch counters")
 
         try:
             data.parameter_bits_paired = await self.get_parameter_bits_paired()
-        except Exception:
+        except Exception:  # noqa: BLE001
             _LOGGER.warning("Failed to fetch parameter bits paired")
         return data
 
@@ -414,7 +414,7 @@ class NescafeBleClient:
                     _LOGGER.info("Pairing successful")
                     return True
             except Exception:
-                pass
+                _LOGGER.debug("perform_pairing: polling exception", exc_info=True)
         _LOGGER.warning("Pairing not confirmed within 10s")
         return False
 

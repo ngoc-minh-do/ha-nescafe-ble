@@ -528,7 +528,7 @@ class BaristaClient:
                     logger.info("Pairing successful!")
                     return True
             except Exception:
-                pass
+                logger.debug("perform_pairing: polling exception", exc_info=True)
         logger.warning("Pairing not confirmed within 30s")
         return False
 

@@ -52,20 +52,20 @@ async def async_setup_entry(
         )
 
     for action_key, action_name in ACTION_BUTTONS.items():
-        entities.append(
-            NescafeButton(
-                coordinator,
-                address,
-                model,
-                ButtonEntityDescription(
-                    key=f"action_{action_key}",
-                    translation_key=f"action_{action_key}",
-                    name=action_name,
-                    entity_category=EntityCategory.CONFIG,
-                ),
-                action_key,
+        if action_key == "power_on_off":
+            desc = ButtonEntityDescription(
+                key=f"action_{action_key}",
+                translation_key=f"action_{action_key}",
+                name=action_name,
             )
-        )
+        else:
+            desc = ButtonEntityDescription(
+                key=f"action_{action_key}",
+                translation_key=f"action_{action_key}",
+                name=action_name,
+                entity_category=EntityCategory.CONFIG,
+            )
+        entities.append(NescafeButton(coordinator, address, model, desc, action_key))
 
     async_add_entities(entities)
 

@@ -603,7 +603,7 @@ def _print_status(status: MachineStatus):
 def _print_counters(counters: Counters):
     print(f"Espresso:       {counters.espresso}")
     print(f"Lungo:          {counters.lungo}")
-    print(f"Extra Lungo:    {counters.extra_lungo}")
+    print(f"Large Lungo:    {counters.extra_lungo}")
     print(f"Cappuccino:     {counters.cappuccino}")
     print(f"Latte Macch.:   {counters.latte_macchiato}")
     print(f"Hot Water:      {counters.hot_water}")

@@ -6,7 +6,7 @@ Home Assistant custom integration for Nescafé Gold Blend Barista BLE machines (
 
 - **Machine status** — state (sleep/preheat/ready/extract), error flags, peripheral flags
 - **Coffee level** — bean hopper level sensor
-- **Usage counters** — espresso, lungo, extra lungo, cappuccino, latte macchiato, hot water, rinse, custom recipe, motor events
+- **Usage counters** — espresso, lungo, large lungo, cappuccino, latte macchiato, hot water, rinse, custom recipe, motor events
 - **Machine info** — serial, model, firmware version, manufacturer
 - **Machine time** — read and sync
 - **Brew buttons** — one-click brew for all recipes

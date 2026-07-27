@@ -27,11 +27,11 @@ COUNTER_SENSORS = [
 ]
 
 RECIPE_BUTTONS = {
-    "espresso": "Brew Espresso",
-    "lungo": "Brew Lungo",
-    "extra_lungo": "Brew Extra Lungo",
+    "espresso": "Brew Espresso / Iced Coffee",
+    "lungo": "Brew Lungo (Black)",
+    "extra_lungo": "Brew Large Lungo (Large Black)",
     "cappuccino": "Brew Cappuccino",
-    "latte_macchiato": "Brew Latte Macchiato",
+    "latte_macchiato": "Brew Latte Macchiato (Cafe Latte)",
     "rinse": "Rinse",
     "hot_water": "Hot Water",
     "custom_recipe": "Custom Recipe",

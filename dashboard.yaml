@@ -16,8 +16,9 @@ cards:
         show_label: true
         label: |
           [[[
-            const beans = states['sensor.nescafe_gold_blend_barista_coffee_level']?.state ?? '--';
-            return `Beans ${beans}%`;
+            return states['binary_sensor.nescafe_gold_blend_barista_low_coffee']?.state === 'on'
+              ? 'Low coffee beans'
+              : 'Coffee beans OK';
           ]]]
         tap_action:
           action: more-info

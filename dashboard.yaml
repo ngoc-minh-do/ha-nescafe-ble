@@ -16,9 +16,23 @@ cards:
         show_label: true
         label: |
           [[[
-            return states['binary_sensor.nescafe_gold_blend_barista_low_coffee']?.state === 'on'
-              ? 'Low coffee beans'
-              : 'Coffee beans OK';
+            const warnings = [];
+        
+            if (states['binary_sensor.nescafe_gold_blend_barista_no_water']?.state === 'on') {
+              warnings.push('🚱 Fill water');
+            }
+        
+            if (states['binary_sensor.nescafe_gold_blend_barista_mandatory_rinse']?.state === 'on') {
+              warnings.push('🔄 Rinse required');
+            }
+        
+            if (states['binary_sensor.nescafe_gold_blend_barista_low_coffee']?.state === 'on') {
+              warnings.push('☕ Low beans');
+            }
+        
+            return warnings.length
+              ? warnings.join(' • ')
+              : 'Ready to brew';
           ]]]
         tap_action:
           action: more-info
@@ -52,8 +66,18 @@ cards:
             - color: var(--secondary-text-color)
           label:
             - justify-self: start
-            - color: var(--secondary-text-color)
             - font-size: 12px
+            - color: |
+                [[[
+                  const hasWarning =
+                    states['binary_sensor.nescafe_gold_blend_barista_no_water']?.state === 'on' ||
+                    states['binary_sensor.nescafe_gold_blend_barista_mandatory_rinse']?.state === 'on' ||
+                    states['binary_sensor.nescafe_gold_blend_barista_low_coffee']?.state === 'on';
+        
+                  return hasWarning
+                    ? 'var(--error-color)'
+                    : 'var(--secondary-text-color)';
+                ]]]
       - type: custom:button-card
         entity: button.nescafe_gold_blend_barista_rinse
         icon: mdi:water-sync
@@ -78,22 +102,6 @@ cards:
             - width: 42px
             - height: 42px
             - border-radius: 50%
-  - type: conditional
-    conditions:
-      - entity: binary_sensor.nescafe_gold_blend_barista_no_water
-        state: "on"
-    card:
-      type: markdown
-      content: |
-        ⚠️ **No Water**
-  - type: conditional
-    conditions:
-      - entity: binary_sensor.nescafe_gold_blend_barista_mandatory_rinse
-        state: "on"
-    card:
-      type: markdown
-      content: |
-        🔄 **Please rinse the machine**
   - type: grid
     columns: 3
     square: false

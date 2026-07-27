@@ -1,0 +1,123 @@
+type: custom:stack-in-card
+cards:
+  - type: custom:stack-in-card
+    mode: horizontal
+    card_mod:
+      style: |
+        ha-card {
+          border: none !important;
+        }
+    cards:
+      - type: custom:button-card
+        entity: sensor.nescafe_gold_blend_barista_machine_state
+        icon: mdi:coffee-maker
+        name: Nescafé Barista
+        show_state: true
+        show_label: true
+        label: |
+          [[[
+            const beans = states['sensor.nescafe_gold_blend_barista_coffee_level']?.state ?? '--';
+            return `Beans ${beans}%`;
+          ]]]
+        tap_action:
+          action: more-info
+        styles:
+          card:
+            - padding: 12px
+            - border: none
+            - box-shadow: none
+          grid:
+            - grid-template-areas: "\"i n\" \"i s\" \"i l\""
+            - grid-template-columns: 48px 1fr
+          icon:
+            - width: 34px
+            - color: |
+                [[[
+                  switch(entity.state) {
+                    case "READY":
+                      return "#43a047";
+                    case "BREWING":
+                      return "#fb8c00";
+                    default:
+                      return "#039be5";
+                  }
+                ]]]
+          name:
+            - justify-self: start
+            - font-size: 16px
+            - font-weight: 600
+          state:
+            - justify-self: start
+            - color: var(--secondary-text-color)
+          label:
+            - justify-self: start
+            - color: var(--secondary-text-color)
+            - font-size: 12px
+      - type: custom:button-card
+        entity: button.nescafe_gold_blend_barista_rinse
+        icon: mdi:water-sync
+        show_name: false
+        show_state: false
+        tap_action:
+          action: press
+        styles:
+          card:
+            - width: 42px
+            - height: 42px
+            - border-radius: 50%
+      - type: custom:button-card
+        entity: button.nescafe_gold_blend_barista_power
+        icon: mdi:power
+        show_name: false
+        show_state: false
+        tap_action:
+          action: press
+        styles:
+          card:
+            - width: 42px
+            - height: 42px
+            - border-radius: 50%
+  - type: conditional
+    conditions:
+      - entity: binary_sensor.nescafe_gold_blend_barista_no_water
+        state: "on"
+    card:
+      type: markdown
+      content: |
+        ⚠️ **No Water**
+  - type: conditional
+    conditions:
+      - entity: binary_sensor.nescafe_gold_blend_barista_mandatory_rinse
+        state: "on"
+    card:
+      type: markdown
+      content: |
+        🔄 **Please rinse the machine**
+  - type: grid
+    columns: 3
+    square: false
+    cards:
+      - type: button
+        entity: button.nescafe_gold_blend_barista_brew_espresso_iced_coffee
+        icon: mdi:cup
+        name: Espresso
+      - type: button
+        entity: button.nescafe_gold_blend_barista_brew_lungo_black
+        icon: mdi:coffee
+        name: Lungo
+      - type: button
+        entity: button.nescafe_gold_blend_barista_brew_latte_macchiato_cafe_latte
+        icon: mdi:coffee
+        name: Latte
+      - type: button
+        entity: button.nescafe_gold_blend_barista_brew_cappuccino
+        icon: mdi:coffee
+        name: Capp.
+      - type: button
+        entity: button.nescafe_gold_blend_barista_brew_large_lungo_large_black
+        icon: mdi:coffee
+        name: XL
+      - type: button
+        entity: button.nescafe_gold_blend_barista_hot_water
+        icon: mdi:cup-water
+        name: Water

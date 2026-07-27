@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import time
 from typing import TYPE_CHECKING
 
 from homeassistant.components.button import ButtonEntity, ButtonEntityDescription
@@ -21,6 +23,16 @@ if TYPE_CHECKING:
     from .coordinator import NescafeConfigEntry
 
 _LOGGER = logging.getLogger(__name__)
+
+BUTTON_COOLDOWN = 2.0
+_cooldown_until: float = 0.0
+_instances: list[NescafeButton] = []
+
+
+def _update_all_button_states() -> None:
+    for btn in _instances:
+        btn.async_write_ha_state()
+
 
 RECIPE_BUTTON_ICONS: dict[str, str] = {
     "espresso": "mdi:cup",
@@ -111,8 +123,31 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
         self._address = address
         self._attr_unique_id = f"{address}_{entity_description.key}"
         self._attr_device_info = device_info(address, model)
+        _instances.append(self)
+
+    @property
+    def available(self) -> bool:
+        if time.monotonic() < _cooldown_until:
+            return False
+        if self.coordinator.data is None:
+            return False
+        return super().available
 
     async def async_press(self) -> None:
+        global _cooldown_until
+        if time.monotonic() < _cooldown_until:
+            _LOGGER.warning("Button %s ignored: cooldown active", self._action)
+            return
+        _cooldown_until = time.monotonic() + BUTTON_COOLDOWN
+        _update_all_button_states()
+
+        async def _reset_cooldown():
+            await asyncio.sleep(BUTTON_COOLDOWN)
+            if time.monotonic() >= _cooldown_until:
+                _update_all_button_states()
+
+        asyncio.ensure_future(_reset_cooldown())
+
         from bleak_retry_connector import close_stale_connections_by_address
         from homeassistant.components import bluetooth
 

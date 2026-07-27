@@ -134,6 +134,7 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
         return super().available
 
     async def async_press(self) -> None:
+        _LOGGER.info("Button pressed: %s", self._action)
         global _cooldown_until
         if time.monotonic() < _cooldown_until:
             _LOGGER.warning("Button %s ignored: cooldown active", self._action)
@@ -164,8 +165,8 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
             await client.connect(timeout=15.0)
             await client._try_pair()
             await self._execute_action(client)
-        except Exception:
-            _LOGGER.exception("Failed to execute action %s", self._action)
+        except Exception:  # noqa: BLE001
+            _LOGGER.warning("Failed to execute action %s", self._action)
         finally:
             await client.disconnect()
 

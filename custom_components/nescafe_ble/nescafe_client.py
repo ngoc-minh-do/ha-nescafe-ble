@@ -245,32 +245,34 @@ class NescafeBleClient:
         try:
             data = await self._read_char(CHAR_MACHINE_SERIAL)
             info.serial = _null_terminated_string(data)
-        except Exception:
-            _LOGGER.exception("Failed to read machine serial")
+        except Exception:  # noqa: BLE001
+            _LOGGER.warning("Failed to read machine serial (%s)", CHAR_MACHINE_SERIAL)
 
         try:
             data = await self._read_char(CHAR_MODEL_NUMBER)
             info.model = _null_terminated_string(data)
-        except Exception:
-            _LOGGER.exception("Failed to read model number")
+        except Exception:  # noqa: BLE001
+            _LOGGER.warning("Failed to read model number (%s)", CHAR_MODEL_NUMBER)
 
         try:
             data = await self._read_char(CHAR_FW_VERSION)
             info.fw_version = _null_terminated_string(data)
-        except Exception:
-            _LOGGER.exception("Failed to read firmware version")
+        except Exception:  # noqa: BLE001
+            _LOGGER.warning("Failed to read firmware version (%s)", CHAR_FW_VERSION)
 
         try:
             data = await self._read_char(CHAR_SW_VERSION)
             info.sw_version = _null_terminated_string(data)
-        except Exception:
-            _LOGGER.exception("Failed to read software version")
+        except Exception:  # noqa: BLE001
+            _LOGGER.warning("Failed to read software version (%s)", CHAR_SW_VERSION)
 
         try:
             data = await self._read_char(CHAR_MANUFACTURER_NAME)
             info.manufacturer = _null_terminated_string(data)
-        except Exception:
-            _LOGGER.exception("Failed to read manufacturer name")
+        except Exception:  # noqa: BLE001
+            _LOGGER.warning(
+                "Failed to read manufacturer name (%s)", CHAR_MANUFACTURER_NAME
+            )
         return info
 
     async def get_machine_time(self) -> datetime | None:

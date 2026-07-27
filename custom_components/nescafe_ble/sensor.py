@@ -45,6 +45,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
             "unknown",
         ],
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:coffee-maker",
     ),
     "coffee_level": SensorEntityDescription(
         key="coffee_level",
@@ -52,6 +53,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement=PERCENTAGE,
         state_class=SensorStateClass.MEASUREMENT,
         suggested_display_precision=0,
+        icon="mdi:coffee-outline",
     ),
     "espresso": SensorEntityDescription(
         key="espresso",
@@ -59,6 +61,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement="brews",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:counter",
     ),
     "lungo": SensorEntityDescription(
         key="lungo",
@@ -66,6 +69,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement="brews",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:counter",
     ),
     "extra_lungo": SensorEntityDescription(
         key="extra_lungo",
@@ -73,6 +77,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement="brews",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:counter",
     ),
     "cappuccino": SensorEntityDescription(
         key="cappuccino",
@@ -80,6 +85,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement="brews",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:counter",
     ),
     "latte_macchiato": SensorEntityDescription(
         key="latte_macchiato",
@@ -87,6 +93,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement="brews",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:counter",
     ),
     "hot_water": SensorEntityDescription(
         key="hot_water",
@@ -94,6 +101,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement="uses",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:counter",
     ),
     "rinse": SensorEntityDescription(
         key="rinse",
@@ -101,6 +109,7 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement="uses",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:counter",
     ),
     "custom_recipe": SensorEntityDescription(
         key="custom_recipe",
@@ -108,54 +117,64 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         native_unit_of_measurement="brews",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:counter",
     ),
     "motor_blocked": SensorEntityDescription(
         key="motor_blocked",
         translation_key="counter_motor_blocked",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:engine-off",
     ),
     "motor_dirty": SensorEntityDescription(
         key="motor_dirty",
         translation_key="counter_motor_dirty",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:engine",
     ),
     "no_water": SensorEntityDescription(
         key="no_water",
         translation_key="counter_no_water",
         state_class=SensorStateClass.TOTAL_INCREASING,
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:water-off",
     ),
     "firmware": SensorEntityDescription(
         key="firmware",
         translation_key="firmware",
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:chip",
     ),
     "model": SensorEntityDescription(
         key="model",
         translation_key="model",
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:information-outline",
     ),
     "serial": SensorEntityDescription(
         key="serial",
         translation_key="serial",
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:barcode",
     ),
     "manufacturer": SensorEntityDescription(
         key="manufacturer",
         translation_key="manufacturer",
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:factory",
     ),
     "machine_name": SensorEntityDescription(
         key="machine_name",
         translation_key="machine_name",
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:rename-box",
     ),
     "parameter_bits_paired": SensorEntityDescription(
         key="parameter_bits_paired",
         translation_key="parameter_bits_paired",
         entity_category=EntityCategory.DIAGNOSTIC,
+        icon="mdi:toggle-switch-outline",
     ),
 }
 

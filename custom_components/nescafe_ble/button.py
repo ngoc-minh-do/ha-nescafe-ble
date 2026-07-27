@@ -22,6 +22,27 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+RECIPE_BUTTON_ICONS: dict[str, str] = {
+    "espresso": "mdi:cup",
+    "lungo": "mdi:coffee",
+    "extra_lungo": "mdi:coffee",
+    "cappuccino": "mdi:coffee",
+    "latte_macchiato": "mdi:coffee",
+    "rinse": "mdi:water-sync",
+    "hot_water": "mdi:cup-water",
+    "custom_recipe": "mdi:coffee-outline",
+}
+
+ACTION_BUTTON_ICONS: dict[str, str] = {
+    "power_on_off": "mdi:power",
+    "pair": "mdi:bluetooth-connect",
+    "factory_reset": "mdi:restore-alert",
+    "descale": "mdi:water-percent",
+    "reset_to_production": "mdi:restore",
+    "sync_time": "mdi:clock-outline",
+    "eco_mode": "mdi:leaf",
+}
+
 PARALLEL_UPDATES = 0
 
 
@@ -46,6 +67,7 @@ async def async_setup_entry(
                     key=f"brew_{recipe_key}",
                     translation_key=f"brew_{recipe_key}",
                     name=recipe_name,
+                    icon=RECIPE_BUTTON_ICONS.get(recipe_key),
                 ),
                 recipe_key,
             )
@@ -57,12 +79,14 @@ async def async_setup_entry(
                 key=f"action_{action_key}",
                 translation_key=f"action_{action_key}",
                 name=action_name,
+                icon=ACTION_BUTTON_ICONS.get(action_key),
             )
         else:
             desc = ButtonEntityDescription(
                 key=f"action_{action_key}",
                 translation_key=f"action_{action_key}",
                 name=action_name,
+                icon=ACTION_BUTTON_ICONS.get(action_key),
                 entity_category=EntityCategory.CONFIG,
             )
         entities.append(NescafeButton(coordinator, address, model, desc, action_key))

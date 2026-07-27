@@ -37,7 +37,7 @@ class NescafeConfigFlow(ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(discovery_info.address)
         self._abort_if_unique_id_configured()
 
-        name = discovery_info.name or "Nescafe Barista"
+        name = discovery_info.name or "Nescafe Gold Blend Barista"
         self.context["title_placeholders"] = {"name": name}
 
         return await self.async_step_bluetooth_confirm()

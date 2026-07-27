@@ -3,10 +3,10 @@ from homeassistant.helpers.device_registry import CONNECTION_BLUETOOTH, DeviceIn
 from .const import MANUFACTURER
 
 
-def device_info(address: str, model: str = "Nescafe Barista") -> DeviceInfo:
+def device_info(address: str, model: str = "Nescafe Gold Blend Barista") -> DeviceInfo:
     return DeviceInfo(
         connections={(CONNECTION_BLUETOOTH, address)},
-        name="Nescafe Barista",
+        name="Nescafe Gold Blend Barista",
         manufacturer=MANUFACTURER,
         model=model,
     )

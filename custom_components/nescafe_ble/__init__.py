@@ -1,4 +1,4 @@
-"""Nescafe Barista BLE integration."""
+"""Nescafe Gold Blend Barista BLE integration."""
 
 from __future__ import annotations
 

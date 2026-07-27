@@ -2,19 +2,19 @@
   "config": {
     "step": {
       "user": {
-        "title": "Discovered Nescafe Barista Machines",
+        "title": "Discovered Nescafe Gold Blend Barista Machines",
         "description": "Select the machine to add",
         "data": {
           "address": "Machine"
         }
       },
       "bluetooth_confirm": {
-        "title": "Discovered Nescafe Barista Machine",
-        "description": "Add the Nescafe Barista machine {name}?"
+        "title": "Discovered Nescafe Gold Blend Barista Machine",
+        "description": "Add the Nescafe Gold Blend Barista machine {name}?"
       }
     },
     "abort": {
-      "no_devices_found": "No Nescafe Barista machines found nearby.",
+      "no_devices_found": "No Nescafe Gold Blend Barista machines found nearby.",
       "already_configured": "This machine is already configured.",
       "cannot_connect": "Failed to connect to the machine."
     }

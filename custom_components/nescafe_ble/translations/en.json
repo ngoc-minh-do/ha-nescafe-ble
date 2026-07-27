@@ -77,10 +77,8 @@
       "action_descale": { "name": "Descaling Mode" },
       "action_reset_to_production": { "name": "Reset to Production Mode" },
       "action_sync_time": { "name": "Sync Time" },
-      "action_eco_mode": { "name": "Eco Mode" }
-    },
-    "switch": {
-      "power": { "name": "Power" }
+      "action_eco_mode": { "name": "Eco Mode" },
+      "action_power_on_off": { "name": "Power" }
     }
   }
 }

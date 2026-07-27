@@ -38,6 +38,7 @@ RECIPE_BUTTONS = {
 }
 
 ACTION_BUTTONS = {
+    "power_on_off": "Power",
     "pair": "Pair",
     "factory_reset": "Factory Reset",
     "descale": "Descale",

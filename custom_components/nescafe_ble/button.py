@@ -141,3 +141,5 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
             await client.set_machine_time()
         elif action == "eco_mode":
             await client.toggle_eco_mode()
+        elif action == "power_on_off":
+            await client.power_on_off()

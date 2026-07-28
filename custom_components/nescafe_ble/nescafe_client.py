@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import struct
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, ClassVar
@@ -15,6 +16,17 @@ from bleak_retry_connector import establish_connection
 
 _LOGGER = logging.getLogger(__name__)
 _local_tz = datetime.now().astimezone().tzinfo
+
+RECIPE_TO_BUTTON_BYTE: dict[str, tuple[int, int]] = {
+    "espresso": (0x00, 0x08),
+    "lungo": (0x00, 0x10),
+    "extra_lungo": (0x00, 0x20),
+    "cappuccino": (0x00, 0x40),
+    "latte_macchiato": (0x00, 0x80),
+    "rinse": (0x00, 0x04),
+    "hot_water": (0x01, 0x00),
+    "custom_recipe": (0x00, 0x02),
+}
 
 UUID_BASE = "-6407-4A30-8AAB-CCBBAE8B7A4A"
 BLE_BASE = "-0000-1000-8000-00805F9B34FB"
@@ -107,6 +119,16 @@ class MachineStatus:
             for i, n in enumerate(self.PERIPHERAL_FLAGS)
             if (self.peripheral_state >> i) & 1
         ]
+
+    @staticmethod
+    def from_bytes(data: bytes | bytearray) -> MachineStatus:
+        return MachineStatus(
+            error_code=struct.unpack_from("<I", data, 0)[0],
+            machine_state=data[4] & 0xFF,
+            peripheral_state=struct.unpack_from("<H", data, 5)[0],
+            leds_on=struct.unpack_from("<H", data, 7)[0],
+            leds_blink=struct.unpack_from("<H", data, 9)[0],
+        )
 
 
 @dataclass(slots=True)
@@ -212,13 +234,7 @@ class NescafeBleClient:
 
     async def get_status(self) -> MachineStatus:
         data = await self._read_char(CHAR_BARISTA_STATUS)
-        return MachineStatus(
-            error_code=struct.unpack_from("<I", data, 0)[0],
-            machine_state=data[4] & 0xFF,
-            peripheral_state=struct.unpack_from("<H", data, 5)[0],
-            leds_on=struct.unpack_from("<H", data, 7)[0],
-            leds_blink=struct.unpack_from("<H", data, 9)[0],
-        )
+        return MachineStatus.from_bytes(data)
 
     async def get_counters(self) -> MachineCounters:
         data = await self._read_char(CHAR_COUNTERS)
@@ -366,6 +382,53 @@ class NescafeBleClient:
     async def send_hmi_button(self, byte0: int, byte1: int) -> None:
         data = bytes([byte0 & 0xFF, byte1 & 0xFF])
         await self._write_char(CHAR_HMI_BUTTON_REQUEST, data)
+
+    async def wake_and_brew_hmi(
+        self,
+        byte0: int,
+        byte1: int,
+        status_callback: Callable[[MachineStatus], None] | None = None,
+    ) -> None:
+        """Wake machine if sleeping, wait for ready, then send brew command.
+
+        If status_callback is provided, calls it with each machine status
+        update to allow real-time HA sensor updates during the wait.
+        """
+        q = await self._start_notify(CHAR_BARISTA_STATUS)
+        try:
+            status = await self.get_status()
+            state = status.machine_state
+
+            if state == 1:  # sleep
+                _LOGGER.info("Machine sleeping — sending power toggle")
+                await self.send_hmi_button(0x00, 0x01)
+                while True:
+                    data = await asyncio.wait_for(q.get(), timeout=30.0)
+                    status = MachineStatus.from_bytes(data)
+                    if status_callback:
+                        status_callback(status)
+                    if status.machine_state >= 2:  # preheat
+                        state = status.machine_state
+                        break
+
+            if state == 2:  # preheat
+                _LOGGER.info("Machine preheating — waiting for ready")
+                while state != 3:  # ready
+                    data = await asyncio.wait_for(q.get(), timeout=60.0)
+                    status = MachineStatus.from_bytes(data)
+                    state = status.machine_state
+                    if status_callback:
+                        status_callback(status)
+
+            _LOGGER.info("Machine ready — sending HMI button %02x %02x", byte0, byte1)
+            await self.send_hmi_button(byte0, byte1)
+
+        finally:
+            assert self._client is not None
+            try:
+                await self._client.stop_notify(CHAR_BARISTA_STATUS)
+            except Exception:
+                _LOGGER.debug("Failed to stop status notify", exc_info=True)
 
     async def start_espresso(self) -> None:
         await self.send_hmi_button(0x00, 0x08)

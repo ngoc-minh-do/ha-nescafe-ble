@@ -15,7 +15,11 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from .const import ACTION_BUTTONS, RECIPE_BUTTONS
 from .coordinator import NescafeDataUpdateCoordinator
 from .device import device_info
-from .nescafe_client import NescafeBleClient
+from .nescafe_client import (
+    RECIPE_TO_BUTTON_BYTE,
+    MachineStatus,
+    NescafeBleClient,
+)
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -173,22 +177,16 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
     async def _execute_action(self, client: NescafeBleClient) -> None:
         action = self._action
 
-        if action == "espresso":
-            await client.start_espresso()
-        elif action == "lungo":
-            await client.start_lungo()
-        elif action == "extra_lungo":
-            await client.start_extra_lungo()
-        elif action == "cappuccino":
-            await client.start_cappuccino()
-        elif action == "latte_macchiato":
-            await client.start_latte_macchiato()
-        elif action == "rinse":
-            await client.start_rinse()
-        elif action == "hot_water":
-            await client.start_hot_water()
-        elif action == "custom_recipe":
-            await client.start_custom_recipe()
+        if action in RECIPE_TO_BUTTON_BYTE:
+            byte0, byte1 = RECIPE_TO_BUTTON_BYTE[action]
+
+            def _status_update(status: MachineStatus) -> None:
+                self.coordinator.data.status = status
+                self.coordinator.async_update_listeners()
+
+            await client.wake_and_brew_hmi(byte0, byte1, status_callback=_status_update)
+        elif action == "power_on_off":
+            await client.power_on_off()
         elif action == "pair":
             await client.perform_pairing()
         elif action == "factory_reset":
@@ -201,5 +199,3 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
             await client.set_machine_time()
         elif action == "eco_mode":
             await client.toggle_eco_mode()
-        elif action == "power_on_off":
-            await client.power_on_off()

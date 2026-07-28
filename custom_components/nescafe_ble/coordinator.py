@@ -44,6 +44,15 @@ class NescafeDataUpdateCoordinator(DataUpdateCoordinator[NescafeData]):
     def update_scan_interval(self, seconds: int) -> None:
         self.update_interval = timedelta(seconds=seconds)
 
+    _busy: bool = False
+
+    @property
+    def is_busy(self) -> bool:
+        return self._busy
+
+    def set_busy(self, value: bool) -> None:
+        self._busy = value
+
     @override
     async def _async_setup(self) -> None:
         address = self.config_entry.unique_id
@@ -70,6 +79,10 @@ class NescafeDataUpdateCoordinator(DataUpdateCoordinator[NescafeData]):
     @override
     async def _async_update_data(self) -> NescafeData:
         assert self._device is not None
+
+        if self._busy:
+            _LOGGER.debug("Skipping poll — button operation in progress")
+            return self.data
 
         await close_stale_connections_by_address(self._device.address)
         client = NescafeBleClient(self._device)

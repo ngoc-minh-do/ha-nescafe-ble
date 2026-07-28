@@ -164,6 +164,7 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
             _LOGGER.error("BLE device %s not found", self._address)
             return
 
+        self.coordinator.set_busy(True)
         client = NescafeBleClient(ble_device)
         try:
             await client.connect(timeout=15.0)
@@ -173,6 +174,7 @@ class NescafeButton(CoordinatorEntity[NescafeDataUpdateCoordinator], ButtonEntit
             _LOGGER.warning("Failed to execute action %s", self._action)
         finally:
             await client.disconnect()
+            self.coordinator.set_busy(False)
 
     async def _execute_action(self, client: NescafeBleClient) -> None:
         action = self._action

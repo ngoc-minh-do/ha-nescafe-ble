@@ -8,8 +8,9 @@ Compatible with Nescafé Gold Blend Barista machines using BLE service UUID:
 Usage:
   brewctl.py scan                    # Scan for nearby machines
   brewctl.py status <mac>            # Read machine status
-  brewctl.py brew <mac> <recipe>     # Start a recipe (espresso/lungo/cappuccino/etc.)
-  brewctl.py power <mac>             # Toggle power on/off
+   brewctl.py brew <mac> <recipe>     # Start a recipe (espresso/lungo/cappuccino/etc.)
+   brewctl.py brew-wake <mac> <recipe>  # Start recipe with wake-and-brew flow
+   brewctl.py power <mac>             # Toggle power on/off
   brewctl.py info <mac>              # Read machine info (serial, FW, model)
   brewctl.py counters <mac>          # Read usage counters
   brewctl.py coffee-level <mac>      # Read coffee bean level
@@ -178,6 +179,16 @@ class MachineStatus:
     def blinking_leds(self) -> list[str]:
         return _bitfield_names(self.leds_blink, self.LED_FLAGS)
 
+    @staticmethod
+    def from_bytes(data: bytes | bytearray) -> MachineStatus:
+        return MachineStatus(
+            error_code=struct.unpack_from("<I", data, 0)[0],
+            machine_state=data[4] & 0xFF,
+            peripheral_state=struct.unpack_from("<H", data, 5)[0],
+            leds_on=struct.unpack_from("<H", data, 7)[0],
+            leds_blink=struct.unpack_from("<H", data, 9)[0],
+        )
+
 
 @dataclass(slots=True)
 class Counters:
@@ -310,13 +321,7 @@ class BaristaClient:
 
     async def get_status(self) -> MachineStatus:
         data = await self._read_char(CHAR_BARISTA_STATUS)
-        return MachineStatus(
-            error_code=struct.unpack_from("<I", data, 0)[0],
-            machine_state=data[4] & 0xFF,
-            peripheral_state=struct.unpack_from("<H", data, 5)[0],
-            leds_on=struct.unpack_from("<H", data, 7)[0],
-            leds_blink=struct.unpack_from("<H", data, 9)[0],
-        )
+        return MachineStatus.from_bytes(data)
 
     # ── Counters ───────────────────────────────────────────────────────────
 
@@ -442,6 +447,40 @@ class BaristaClient:
 
     async def toggle_eco_mode(self):
         await self._send_hmi_button(0x02, 0x00)
+
+    async def wake_and_brew_hmi(self, byte0: int, byte1: int):
+        """Wake machine if sleeping, wait for ready, then send brew command."""
+        q = await self._start_notify(CHAR_BARISTA_STATUS)
+        try:
+            status = await self.get_status()
+            state = status.machine_state
+
+            if state == 1:  # sleep
+                logger.info("Machine sleeping — sending power toggle")
+                await self._send_hmi_button(0x00, 0x01)
+                while True:
+                    data = await asyncio.wait_for(q.get(), timeout=30.0)
+                    status = MachineStatus.from_bytes(data)
+                    if status.machine_state >= 2:  # preheat
+                        state = status.machine_state
+                        break
+
+            if state == 2:  # preheat
+                logger.info("Machine preheating — waiting for ready")
+                while state != 3:  # ready
+                    data = await asyncio.wait_for(q.get(), timeout=60.0)
+                    status = MachineStatus.from_bytes(data)
+                    state = status.machine_state
+
+            logger.info("Machine ready — sending HMI button %02x %02x", byte0, byte1)
+            await self._send_hmi_button(byte0, byte1)
+
+        finally:
+            assert self._client is not None
+            try:
+                await self._client.stop_notify(CHAR_BARISTA_STATUS)
+            except Exception:
+                logger.debug("Failed to stop status notify", exc_info=True)
 
     RECIPE_MAP: ClassVar[dict[str, Any]] = {
         "espresso": start_espresso,
@@ -686,6 +725,30 @@ async def _cmd_brew(args):
         await c.disconnect()
 
 
+async def _cmd_brew_wake(args):
+    c = BaristaClient(args.mac)
+    try:
+        await c.connect()
+        await c._try_pair()
+        recipe_map = {
+            "espresso": (0x00, 0x08),
+            "lungo": (0x00, 0x10),
+            "extralungo": (0x00, 0x20),
+            "cappuccino": (0x00, 0x40),
+            "lattemacchiato": (0x00, 0x80),
+            "rinse": (0x00, 0x04),
+            "hotwater": (0x01, 0x00),
+            "custom": (0x00, 0x02),
+        }
+        byte0, byte1 = recipe_map[args.recipe]
+        await c.wake_and_brew_hmi(byte0, byte1)
+        print(f"Started (with wake): {args.recipe}")
+    except KeyError:
+        print(f"Unknown recipe: {args.recipe}")
+    finally:
+        await c.disconnect()
+
+
 async def _cmd_power(args):
     c = BaristaClient(args.mac)
     try:
@@ -843,6 +906,25 @@ def main():
         help="Recipe to brew",
     )
 
+    p_brew_wake = sub.add_parser(
+        "brew-wake", help="Start a recipe with wake-and-brew flow"
+    )
+    p_brew_wake.add_argument("mac", help="Machine MAC address")
+    p_brew_wake.add_argument(
+        "recipe",
+        choices=[
+            "espresso",
+            "lungo",
+            "extralungo",
+            "cappuccino",
+            "lattemacchiato",
+            "rinse",
+            "hotwater",
+            "custom",
+        ],
+        help="Recipe to brew",
+    )
+
     p_power = sub.add_parser("power", help="Toggle power on/off")
     p_power.add_argument("mac", help="Machine MAC address")
 
@@ -890,6 +972,7 @@ def main():
         "info": _cmd_info,
         "coffee-level": _cmd_coffee_level,
         "brew": _cmd_brew,
+        "brew-wake": _cmd_brew_wake,
         "power": _cmd_power,
         "pair": _cmd_pair,
         "custom-recipe": _cmd_custom_recipe,

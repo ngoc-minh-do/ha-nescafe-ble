@@ -11,7 +11,6 @@ SCAN_SERVICE_UUID = "c08b0100-6407-4a30-8aab-ccbbae8b7a4a"
 DEFAULT_SCAN_INTERVAL = 86400
 
 MACHINE_STATE_SENSOR = "machine_state"
-COFFEE_LEVEL_SENSOR = "coffee_level"
 COUNTER_SENSORS = [
     "espresso",
     "lungo",

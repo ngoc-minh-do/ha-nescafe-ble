@@ -12,7 +12,6 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    PERCENTAGE,
     EntityCategory,
 )
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
@@ -46,14 +45,6 @@ SENSOR_DESCRIPTIONS: dict[str, SensorEntityDescription] = {
         ],
         entity_category=EntityCategory.DIAGNOSTIC,
         icon="mdi:coffee-maker",
-    ),
-    "coffee_level": SensorEntityDescription(
-        key="coffee_level",
-        translation_key="coffee_level",
-        native_unit_of_measurement=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-        suggested_display_precision=0,
-        icon="mdi:coffee-outline",
     ),
     "espresso": SensorEntityDescription(
         key="espresso",
@@ -225,9 +216,6 @@ class NescafeSensor(CoordinatorEntity[NescafeDataUpdateCoordinator], SensorEntit
             if data.status is None:
                 return None
             return data.status.state_name
-
-        if key == "coffee_level":
-            return data.coffee_level
 
         if key == "firmware":
             if data.info is None:

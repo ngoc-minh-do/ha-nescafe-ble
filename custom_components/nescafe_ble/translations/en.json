@@ -32,7 +32,6 @@
   "entity": {
     "sensor": {
       "machine_state": { "name": "Machine State" },
-      "coffee_level": { "name": "Coffee Level" },
       "counter_espresso": { "name": "Espresso Count" },
       "counter_lungo": { "name": "Lungo Count" },
       "counter_extra_lungo": { "name": "Large Lungo Count" },

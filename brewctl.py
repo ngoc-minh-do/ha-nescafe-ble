@@ -11,9 +11,8 @@ Usage:
    brewctl.py brew <mac> <recipe>     # Start a recipe (espresso/lungo/cappuccino/etc.)
    brewctl.py brew-wake <mac> <recipe>  # Start recipe with wake-and-brew flow
    brewctl.py power <mac>             # Toggle power on/off
-  brewctl.py info <mac>              # Read machine info (serial, FW, model)
-  brewctl.py counters <mac>          # Read usage counters
-  brewctl.py coffee-level <mac>      # Read coffee bean level
+   brewctl.py info <mac>              # Read machine info (serial, FW, model)
+   brewctl.py counters <mac>          # Read usage counters
   brewctl.py pair <mac>              # Pair with machine
   brewctl.py custom-recipe <mac>     # Send a custom recipe
   brewctl.py set-time <mac>          # Sync machine time
@@ -67,7 +66,6 @@ CHAR_CUSTOM_RECIPE = "C08B010F" + UUID_BASE
 CHAR_FT_MOTOR = "C08B0110" + UUID_BASE
 CHAR_FT_INFO = "C08B0111" + UUID_BASE
 CHAR_MACHINE_NAME = "C08B0112" + UUID_BASE
-CHAR_COFFEE_LEVEL_RAW = "C08B0113" + UUID_BASE
 CHAR_COMMANDS = "43AF0001-5C58-4180-A3E4-471D6A45E2DE"
 CHAR_FOTA_COMMANDS = "167E3129-A9FF-11E9-A2A3-2A2AE2DBCCE4"
 CHAR_FOTA_STATUS = "167E312A-A9FF-11E9-A2A3-2A2AE2DBCCE4"
@@ -340,12 +338,6 @@ class BaristaClient:
             custom_recipe=struct.unpack_from("<H", data, 14)[0],
             hot_water=struct.unpack_from("<H", data, 16)[0],
         )
-
-    # ── Coffee Level ───────────────────────────────────────────────────────
-
-    async def get_coffee_level(self) -> int:
-        data = await self._read_char(CHAR_COFFEE_LEVEL_RAW)
-        return struct.unpack_from("<H", data, 0)[0]
 
     # ── Machine Info ───────────────────────────────────────────────────────
 
@@ -704,16 +696,6 @@ async def _cmd_info(args):
         await c.disconnect()
 
 
-async def _cmd_coffee_level(args):
-    c = BaristaClient(args.mac)
-    try:
-        await c.connect()
-        level = await c.get_coffee_level()
-        print(f"Coffee Level Raw: {level}")
-    finally:
-        await c.disconnect()
-
-
 async def _cmd_brew(args):
     c = BaristaClient(args.mac)
     try:
@@ -895,9 +877,6 @@ def main():
     p_info = sub.add_parser("info", help="Read machine info")
     p_info.add_argument("mac", help="Machine MAC address")
 
-    p_coffee = sub.add_parser("coffee-level", help="Read coffee level")
-    p_coffee.add_argument("mac", help="Machine MAC address")
-
     p_brew = sub.add_parser("brew", help="Start a recipe")
     p_brew.add_argument("mac", help="Machine MAC address")
     p_brew.add_argument(
@@ -970,7 +949,6 @@ def main():
         "status": _cmd_status,
         "counters": _cmd_counters,
         "info": _cmd_info,
-        "coffee-level": _cmd_coffee_level,
         "brew": _cmd_brew,
         "brew-wake": _cmd_brew_wake,
         "power": _cmd_power,

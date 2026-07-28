@@ -41,7 +41,6 @@ CHAR_PARAMETER_BITS_PAIRED = "C08B010D" + UUID_BASE
 CHAR_RECIPES = "C08B010E" + UUID_BASE
 CHAR_CUSTOM_RECIPE = "C08B010F" + UUID_BASE
 CHAR_MACHINE_NAME = "C08B0112" + UUID_BASE
-CHAR_COFFEE_LEVEL_RAW = "C08B0113" + UUID_BASE
 CHAR_HMI_BUTTON_REQUEST = "C08B0107" + UUID_BASE
 CHAR_MODEL_NUMBER = "00002A24" + BLE_BASE
 CHAR_FW_VERSION = "00002A26" + BLE_BASE
@@ -159,7 +158,6 @@ class MachineInfo:
 class NescafeData:
     status: MachineStatus | None = None
     counters: MachineCounters | None = None
-    coffee_level: int | None = None
     info: MachineInfo | None = None
     machine_time: datetime | None = None
     pairing_status: bool | None = None
@@ -252,10 +250,6 @@ class NescafeBleClient:
             hot_water=struct.unpack_from("<H", data, 16)[0],
         )
 
-    async def get_coffee_level(self) -> int:
-        data = await self._read_char(CHAR_COFFEE_LEVEL_RAW)
-        return struct.unpack_from("<H", data, 0)[0]
-
     async def get_info(self) -> MachineInfo:
         info = MachineInfo()
         try:
@@ -335,11 +329,6 @@ class NescafeBleClient:
     async def fetch_all(self) -> NescafeData:
         data = NescafeData()
         data.status = await self.get_status()
-
-        try:
-            data.coffee_level = await self.get_coffee_level()
-        except Exception:  # noqa: BLE001
-            _LOGGER.warning("Failed to fetch coffee level")
 
         try:
             data.info = await self.get_info()

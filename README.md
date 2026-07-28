@@ -94,9 +94,6 @@ brewctl.py reset-production AA:BB:CC:DD:EE:FF
 # Read standard recipe parameters
 brewctl.py recipes AA:BB:CC:DD:EE:FF
 
-# Read coffee bean level
-brewctl.py coffee-level AA:BB:CC:DD:EE:FF
-
 # Send and brew a custom recipe
 brewctl.py custom-recipe AA:BB:CC:DD:EE:FF --led 0 --doses 2 --mixing 60 --jet 0
 ```

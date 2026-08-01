@@ -1,0 +1,26 @@
+name: Check manifest version
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check manifest version matches tag
+        run: |
+          MANIFEST_VERSION=$(jq -r '.version' custom_components/nescafe_ble/manifest.json)
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+
+          echo "Manifest: $MANIFEST_VERSION"
+          echo "Tag:      $TAG_VERSION"
+
+          if [ "$MANIFEST_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::manifest.json version ($MANIFEST_VERSION) does not match tag ($TAG_VERSION)"
+            exit 1
+          fi

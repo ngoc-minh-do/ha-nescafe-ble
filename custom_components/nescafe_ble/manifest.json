@@ -12,9 +12,6 @@
   "documentation": "https://github.com/ngoc-minh-do/ha-nescafe-ble",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/ngoc-minh-do/ha-nescafe-ble/issues",
-  "requirements": [
-    "bleak",
-    "bleak-retry-connector"
-  ],
+  "requirements": [],
   "version": "0.1.0"
 }

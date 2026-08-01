@@ -1,3 +1,22 @@
+## v0.1.3 (2026-08-02)
+
+### Feat
+
+- add commitizen hook for commit message validation
+
+### Refactor
+
+- remove coffee level sensor from all files
+- remove bleak, bleak-retry-connector, and pycryptodome from project dependencies (provided by HA)
+
+### Docs
+
+- update README: remove coffee level, update poll interval, document brew-wake and all CLI commands
+
+### Ci
+
+- add CI workflow to validate manifest version matches git tag
+
 ## v0.1.2 (2026-07-28)
 
 ### Feat

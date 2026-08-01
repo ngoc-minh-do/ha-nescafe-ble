@@ -11,6 +11,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "commitizen>=4.17.0",
     "homeassistant>=2026.2.3",
     "pre-commit>=4.6.1",
     "pyright>=1.1.411",

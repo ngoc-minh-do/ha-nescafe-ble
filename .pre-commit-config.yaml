@@ -6,14 +6,25 @@ repos:
         entry: uv run ruff check --fix
         language: system
         types: [python]
+        stages: [pre-commit]
+
       - id: ruff-format
         name: ruff-format
         entry: uv run ruff format
         language: system
         types: [python]
+        stages: [pre-commit]
+
       - id: pyright
         name: pyright
         entry: uv run pyright
         language: system
         types: [python]
         pass_filenames: false
+        stages: [pre-commit]
+
+      - id: commitizen
+        name: commitizen
+        entry: uv run cz check --commit-msg-file
+        language: system
+        stages: [commit-msg]
